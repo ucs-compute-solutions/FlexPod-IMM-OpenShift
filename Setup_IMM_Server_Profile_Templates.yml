@@ -1,0 +1,14 @@
+---
+# Create and Deploy the server profile template(s). Users can derive one or more server profiles
+# from these templates
+
+- name: "Create Server Profile Templates"
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - group_vars/secrets.yml
+    - group_vars/ucs.yml
+
+  # Create Server PoProfile Templates
+  roles:
+    - role: UCS-IMM/create_server_profile_template

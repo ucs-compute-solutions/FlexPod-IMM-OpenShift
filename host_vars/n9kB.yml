@@ -1,0 +1,7 @@
+---
+vpc_source: "{{ hostvars['n9kB'].ansible_host }}"
+vpc_destination: 10.102.0.3 # "{{ hostvars['n9kA'].ansible_host }}"
+vpc_role_priority: "20"
+# NTP Distribution IP for N9K-A in the BareMetal/MGMT VLAN
+OpenShift_ntp_dist_IP: "{{ openshift_ntp_servers[1].ip_address }}{{ ntp_distribution_nm_cidr }}"
+#

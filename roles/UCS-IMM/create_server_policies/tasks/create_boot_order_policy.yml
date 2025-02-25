@@ -1,0 +1,48 @@
+---
+- name: "Boot Order Policy for M.2"
+  vars:
+    api_info: &api_info_m2_boot
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+  cisco.intersight.intersight_rest_api:
+          <<: *api_info_m2_boot
+          resource_path: /boot/PrecisionPolicies
+          query_params:
+             $filter: "Name eq '{{ m2_boot_order_policy_name }}'"
+          api_body: {
+            "Name": "{{ m2_boot_order_policy_name }}",
+            "Description": "{{ m2_boot_order_policy_description }}",
+
+            "Organization": {
+               "Moid": "{{ intersight_org.api_response.Moid }}"
+             },
+            Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+
+             "ConfiguredBootMode": "{{ boot_mode }}",
+             "EnforceUefiSecureBoot": "{{ enable_uefi_secureboot|bool }}",
+             "BootDevices": [
+                {
+                   "Name": "KVM-Mapped-ISO",
+                   "Subtype": "kvm-mapped-dvd",
+                   "Enabled": true,
+                   "ObjectType": "boot.VirtualMedia"
+                },
+                {
+                   "Name": "MStorBootVd",
+                   "Slot": "MSTOR-RAID",
+                   "Enabled": true,
+                   "ObjectType": "boot.LocalDisk"
+                },
+                {
+                   "Name": "CIMC-Mapped-ISO",
+                   "Subtype": "cimc-mapped-dvd",
+                   "Enabled": true,
+                   "ObjectType": "boot.VirtualMedia"
+                }
+             ]
+
+            }
+  register: m2_boot_policy

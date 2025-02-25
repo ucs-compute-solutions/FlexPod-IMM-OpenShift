@@ -1,0 +1,178 @@
+---
+# This file contains UCS IMM variables.
+# 
+# Enter Intersight API Key ID and the location of the SecretKey file
+# 
+api_private_key   : SecretKey.txt
+# 
+# Prefix added to the pool/policy/profile configuration to eaisly identify items created by Ansible
+prefix        : "AA02-OCP"
+
+# Organization Name
+org_name      : "AA02-OCP"
+
+# Fabric Interconnect Domain Name
+name_of_ucs_domain   : "AA02-S9108"
+name_of_domain_profile_a     : "{{ name_of_ucs_domain }}-Domain-Profile-A"
+name_of_domain_profile_b     : "{{ name_of_ucs_domain }}-Domain-Profile-B"
+
+###############################################################################
+#
+# Server Configuration
+#
+##############################################################################
+
+# Server Generation - set to M8, M7 or M6
+server_generation: "M8"
+
+# Server CPU Type - set to Intel or AMD - If server_generation is M7, then server_cpu_type must be Intel.
+server_cpu_type: "AMD"
+
+###############################################################################
+#
+# Various Pools
+#
+###############################################################################
+
+# Chassis Configuration - UUID Pool
+name_of_uuid_pool: '{{ prefix }}-UUID-Pool'
+uuid_prefix: 'AA020000-0000-0001'
+uuid_size: 50
+uuid_from: 'AA02-000000000033'
+
+# IP Address Pool for Management Access (in-band access) - Our example uses the BareMetal-MGMT Pool and VLAN with in-band access in the OpenShift tenant. The BareMetal-MGMT VLAN ID has to be hard coded here.
+# We could also use the OOB-MGMT Subnet and VLAN here since we do have that piped into the UCS through the Nexus Switches to the FI Uplinks
+name_of_ip_pool_for_management_access       : "{{ prefix }}-BareMetal-MGMT-IP-Pool"
+imc_access_vlan                             : 1022 # VLAN ID for Pool Subnet - Must be hard coded here
+ip_pool_start_for_management_access         : 10.102.2.239
+size_of_ip_pool_for_management_access       : 10
+gateway_mgmt                                : 10.102.2.254
+netmask_mgmt                                : 255.255.255.0
+primary_dns_mgmt                            : "{{ dns_servers[0].ip_address }}"
+secondary_dns_mgmt                          : "{{ dns_servers[1].ip_address }}"
+
+# Separate MAC Address Pools for Fabric-A and Fabric-B
+#For FI-A
+name_of_mac_pool_on_fi_a          : "{{ prefix }}-Mac-Pool-A"
+mac_pool_start_on_fi_a            : "00:25:B5:A2:0A:80"
+size_of_mac_pool_on_fi_a          : 128
+
+# For FI-B
+name_of_mac_pool_on_fi_b          : "{{ prefix}}-Mac-Pool-B"
+mac_pool_start_on_fi_b            : "00:25:B5:A2:0B:80"
+size_of_mac_pool_on_fi_b          : 128
+
+###############################################################################
+#
+# Server Policies
+#
+###############################################################################
+# Fabric Interconnect VLAN Policy
+name_of_fi_vlan_policy     : "AA02-S9108-VLAN-Policy" # Configured in FlexPod Base Configuration
+# Fabric Interconnect Multicast Policy
+name_of_fi_mcast_policy    : "AA02-MCAST"
+# BIOS policies
+name_of_m8_bios_policy     : "{{ prefix }}-{{ server_cpu_type }}-M8-Virt-BIOS"
+name_of_m7_bios_policy     : "{{ prefix }}-Intel-M7-Virt-BIOS"
+name_of_m6_bios_policy     : "{{ prefix }}-{{ server_cpu_type }}-M6-Virt-BIOS"
+#
+# IMC Access Policy - Configures the KVM to be accessed In-Band
+# The in-band vlan must be enabled on the trunk between Nexus 9K and UCS FI
+name_of_imc_access_policy           : "{{ prefix }}-IMC-Access-Policy"
+
+# KVM Access Policy - Enables (true) or disables (false) Tunneled KVM Server Access
+# Ensure the Intersight Account allows Tunneled KVM> To enable Tunneled KVM for 
+# account,  go to Settings > Security and Privacy and enable Tunneled KVM settings
+name_of_kvm_policy                  : "{{ prefix }}-KVM-Access-Policy"
+enable_tunneled_kvm                 : 'true'
+
+# Virtual Media Policy - enables mounting ISO files using KVM 
+name_of_vmedia_policy                 : "{{ prefix }}-KVM-vMedia-Policy"
+
+# Boot Order Policy for M.2 Boot
+m2_boot_order_policy_name         : "{{ prefix }}-M.2-Boot-Order-Policy"
+
+# Server Power Policy
+server_power_policy_name          : "{{ prefix }}-Server-Power-Policy"
+
+# Server Thermal Policy
+server_thermal_policy_name          : "{{ prefix }}-Server-Thermal-Policy"
+
+# IPMI over LAN Policy 
+name_of_ipmi_policy                 : "{{ prefix }}-Enable-IPMIoLAN-Policy"
+
+# Local User Policy to enable KVM and IPMI Access
+name_of_LocalUser_policy            : "{{ prefix }}-LocalUser-Policy"
+name_of_local_user                  : "flexadmin"
+password_for_local_user             : "{{ password_1 }}"
+
+# M.2 RAID Storage Policie
+name_of_m2_raid_policy              : "{{ prefix }}-M.2-RAID-Storage-Policy"
+
+# Ethernet QoS Policy to set MTU 1500 and QoS Best Effort;
+name_of_mtu1500_eth_qos_policy         : "{{ prefix }}-MTU1500-EthQoS-Policy"
+
+# Ethernet QoS Policy to set MTU 9000 and QoS Best Effort;
+name_of_mtu9000_eth_qos_policy         : "{{ prefix }}-MTU9000-EthQoS-Policy"
+
+# Ethernet Network Control Policy to enable CDP and LLDP
+name_of_ethernet_network_control_policy         : "{{ prefix }}-Enable-CDP-LLDP-Policy"
+
+# Linux-V2 Ethernet Adapter Policy for CoreOS
+name_of_ethernet_adapter_linuxv2_policy  : "{{ prefix }}-Linux-V2-EthAdapter-Policy"
+
+# Ethernet 16 RX Queues VIC Adapter Policy
+name_of_ethernet_adapter_16rxq_policy  : "{{ prefix }}-16RXQs-EthAdapter-Policy"
+
+# Ethernet Network Group Policy - VLAN details of vNIC assigned for BareMetal-MGMT VLAN
+name_of_network_group_policy_for_management         : "{{ prefix }}-BareMetal-MGMT-NetGrp-Policy"
+
+# Ethernet Network Group Policy - VLAN details of vNIC assigned for OCP iSCSI-A and optional NVMe-TCP-A VLANs
+name_of_network_group_policy_for_iscsi_nvme_tcp_a          : "{{ prefix }}-iSCSI-NVMe-TCP-A-NetGrp-Policy"
+
+# Ethernet Network Group Policy - VLAN details of vNIC assigned for OCP iSCSI-B and optional NVMe-TCP-B VLANs
+name_of_network_group_policy_for_iscsi_nvme_tcp_b          : "{{ prefix }}-iSCSI-NVMe-TCP-B-NetGrp-Policy"
+
+# Ethernet Network Group Policy - VLAN details of OCP NFS vNIC Interface
+name_of_network_group_policy_for_nfs                : "{{ prefix }}-NFS-NetGrp-Policy"
+
+# vNIC Template for BareMetal-MGMT
+name_of_vnic_template_baremetal      : "{{ prefix }}-BareMetal-MGMT-vNIC"
+
+# vNIC Template for iSCSI-NVMe-TCP-A
+name_of_vnic_template_iscsi_nvme_tcp_a      : "{{ prefix }}-iSCSI-NVMe-TCP-A-vNIC"
+
+# vNIC Template for iSCSI-NVMe-TCP-B
+name_of_vnic_template_iscsi_nvme_tcp_b      : "{{ prefix }}-iSCSI-NVMe-TCP-B-vNIC"
+
+# vNIC Template for NFS
+name_of_vnic_template_nfs      : "{{ prefix }}-NFS-vNIC"
+
+# LAN Connectivity Policy
+# - Note -
+# The Control Plane node LAN Connectivity Policy only has the BareMetal-MGMT vNIC. The Worker node LAN Connectivity Policy has the 
+# BareMetal-MGMT vNIC, iSCSI-NVMe-TCP-A and iSCSI-NVMe-TCP-B vNICs, and the NFS vNIC. Customers can choose whether or not to configure
+# NVMe-TCP and NFS. If NFS is not configured, only 3 vNICS will be configured on Worker nodes.
+
+name_of_cp_lan_connectivity_policy   : "{{ prefix }}-Control-Plane-LANCon"
+name_of_worker_lan_connectivity_policy      : "{{ prefix }}-Worker-LANCon"
+
+name_of_control_plane_vNIC                        : "eno5"
+
+name_of_worker_vnic_1                             : "eno5"
+name_of_worker_vnic_2                             : "eno6"
+name_of_worker_vnic_3                             : "eno7"
+name_of_worker_vnic_4                             : "eno8" 
+
+# Boot mode for server. Must be Uefi
+# UEFI secure boot true or false - must be false for OpenShift
+boot_mode                   : "Uefi"
+enable_uefi_secureboot      : 'false'
+
+# Server Profile Templates
+name_of_cp_blade_SPT     : "{{ prefix }}-Control-Plane-{{ server_cpu_type }}-{{ server_generation }}-Blade-SPT"
+name_of_cp_rack_SPT      : "{{ prefix }}-Control-Plane-{{ server_cpu_type }}-{{ server_generation }}-C-SPT"
+name_of_worker_blade_SPT     : "{{ prefix }}-Worker-{{ server_cpu_type }}-{{ server_generation }}-Blade-SPT"
+name_of_worker_rack_SPT     : "{{ prefix }}-Worker-{{ server_cpu_type }}-{{ server_generation }}-C-SPT"
+
+

@@ -1,0 +1,19 @@
+---
+  ##
+  # Configure VLANs on the Nexus Switches
+  #
+  - name: Create BareMetal VLAN
+    cisco.nxos.nxos_vlans:
+      config:
+        - vlan_id: "{{ item.id }}"
+          name: "{{ item.name }}"
+      state: merged
+    with_list: "{{ ib_mgmt_vlan_list }}"
+#
+  - name: Create Storage VLANs
+    cisco.nxos.nxos_vlans:
+      config:
+        - vlan_id: "{{ item.id }}"
+          name: "{{ item.name }}"
+      state: merged
+    with_list: "{{ storage_vlan_list }}"

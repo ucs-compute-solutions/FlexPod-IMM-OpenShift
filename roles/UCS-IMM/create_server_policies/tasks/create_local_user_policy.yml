@@ -1,0 +1,36 @@
+---
+- name: "Configure Local User Policy"
+  connection: local
+  collections:
+    - cisco.intersight
+
+  vars:
+    api_info: &api_info
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  intersight_local_user_policy:
+          <<: *api_info
+          name: "{{ name_of_LocalUser_policy }}"
+          description: "{{ description_of_LocalUser_policy }}"
+          tags:
+            - Key: configmode
+              Value: ansible
+
+            - Key: prefix
+              Value: "{{ prefix }}"
+
+          enforce_strong_password: true
+          enable_password_expiry: false
+          password_history: 0
+          purge: true
+          always_update_password: true
+          local_users:
+            - username: "{{ name_of_local_user }}"
+              role: admin
+              password: "{{ password_for_local_user }}"
+          organization: "{{ org_name }}"
+  register: local_user_policy

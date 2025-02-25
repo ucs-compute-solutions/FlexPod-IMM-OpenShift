@@ -1,0 +1,17 @@
+---
+  # Configuration for Nexus
+  #
+  # Initiate a configuration backup before making changes. The backup will be
+  # stored in the  ~/ directory. Change the directory in ../defaults/main.yml
+  #- include_tasks: initiate_nxos_config_backup.yml
+  #
+  # Configure vlans
+  - include_tasks: configure_nxos_vlans.yml
+  # Add VLANs to Interfaces
+  - include_tasks: set_nxos_interfaces.yml
+  # Configure NTP Distribution Interface Default Gateway
+  - include_tasks: configure_default_gw.yml
+  # Configure NTP Distribution
+  - include_tasks: configure_nxos_ntp.yml
+  # Save Configuration
+  - include_tasks: save_nxos_config.yml

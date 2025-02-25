@@ -1,0 +1,33 @@
+---
+# Create Pools
+- name: "Create IMM Pools"
+  vars:
+    api_info: &api_info_org_moid
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+  intersight_rest_api:
+    <<: *api_info_org_moid
+    resource_path: /organization/Organizations
+    query_params:
+      $filter: "Name eq '{{ org_name }}'"
+  register: intersight_org
+  delegate_to: localhost
+  tags: always
+  run_once: true
+
+# Create IP Pool for CIMC-KVM Access
+- include_tasks: create_ip_pools.yml
+#
+# Create MAC Pools for FI-A and FI-B
+- include_tasks: create_mac_pools.yml
+#
+# Create UUID Pool
+- include_tasks: create_uuid_pool.yml
+#
+# Add OpenShift VLANs to FI VLAN Policy and Deploy UCS Domain Profile
+- include_tasks: update_fi_vlan_policy.yml
+#
+

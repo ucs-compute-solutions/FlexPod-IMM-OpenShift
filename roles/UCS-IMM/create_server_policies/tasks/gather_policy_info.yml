@@ -1,0 +1,55 @@
+---
+# Gather various policy details to evaluate for existence of Boot Order policy and LAN 
+# Connectivity Policy.
+#
+# Get M.2 Boot Order Policy for Service Profile Template if iSCSI is being configured
+- name: "Get M.2 Boot Order Policy Details"
+  vars:
+    api_info: &api_info_m2_boot_policy
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  intersight_rest_api:
+    <<: *api_info_m2_boot_policy
+    resource_path: /boot/PrecisionPolicies
+    query_params:
+      $filter: "Name eq '{{ m2_boot_order_policy_name }}'"
+  register:  m2_boot_order_policy_details
+
+# Get Control Plane LAN Connectivity Policy for Service Profile Template
+- name: "Get Control Plane LAN Connectivity Policy Details"
+  vars:
+    api_info: &api_info_cp_lan_connectivity
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  intersight_rest_api:
+    <<: *api_info_cp_lan_connectivity
+    resource_path: /vnic/LanConnectivityPolicies
+    query_params:
+      $filter: "Name eq '{{ name_of_cp_lan_connectivity_policy }}'"
+
+  register:  cp_lan_connectivity_policy_details 
+
+# Get Worker LAN Connectivity Policy for Service Profile Template
+- name: "Get Worker LAN Connectivity Policy Details"
+  vars:
+    api_info: &api_info_worker_lan_connectivity
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  intersight_rest_api:
+    <<: *api_info_worker_lan_connectivity
+    resource_path: /vnic/LanConnectivityPolicies
+    query_params:
+      $filter: "Name eq '{{ name_of_worker_lan_connectivity_policy }}'"
+  register:  worker_lan_connectivity_policy_details

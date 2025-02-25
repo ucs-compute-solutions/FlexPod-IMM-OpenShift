@@ -1,0 +1,370 @@
+---
+# Create Server Profile Template for AMD M8 Worker Blade Nodes
+- name: "Configure Server Profile Template for AMD M8 Worker Blade Nodes"
+  vars:
+        api_info: &api_info_assign_8bworker
+          api_private_key: "{{ api_private_key }}"
+          api_key_id: "{{ api_key_id }}"
+          api_uri: "{{ api_uri | default(omit) }}"
+          validate_certs: "{{ validates_certs | default(omit) }}"
+          state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+          <<: *api_info_assign_8bworker
+          resource_path: /server/ProfileTemplates
+          query_params:
+            $filter: "Name eq '{{ name_of_worker_blade_SPT }}'"
+          api_body: {
+              "Action": "No-op",
+              "Name": "{{ name_of_worker_blade_SPT }}",
+              "Description": "{{ description_of_worker_blade_SPT }}",
+              ClassId: "server.ProfileTemplate",
+              "PolicyBucket": [
+                {
+                  "Moid": "{{ m8_bios_policy_details.api_response.Moid }}",
+                  "ObjectType": "bios.Policy"
+                },
+                {
+                  "Moid": "{{ m2_boot_order_policy_details.api_response.Moid }}",
+                  "ObjectType": "boot.PrecisionPolicy"
+                },
+                {
+                  "Moid": "{{ server_power_policy_details.api_response.Moid }}",
+                  "ObjectType": "power.Policy"
+                },
+                {
+                  "Moid": "{{ imc_access_policy_details.api_response.Moid }}",
+                  "ObjectType": "access.Policy"
+                },
+                {
+                  "Moid": "{{ ipmi_policy_details.api_response.Moid }}",
+                  "ObjectType": "ipmioverlan.Policy"
+                },
+                {
+                  "Moid": "{{ local_user_policy_details.api_response.Moid }}",
+                  "ObjectType": "iam.EndPointUserPolicy"
+                },
+                {
+                  "Moid": "{{ m2_raid_policy_details.api_response.Moid }}",
+                  "ObjectType": "storage.StoragePolicy"
+                },
+                {
+                  "Moid": "{{ worker_lan_connectivity_policy_details.api_response.Moid }}",
+                  "ObjectType": "vnic.LanConnectivityPolicy"
+                },
+                {
+                  "Moid": "{{ kvm_policy_details.api_response.Moid }}",
+                  "ObjectType": "kvm.Policy"
+                },
+                {
+                  "Moid": "{{ vmedia_policy_details.api_response.Moid }}",
+                  "ObjectType": "vmedia.Policy"
+                }
+              ],
+              "TargetPlatform": "FIAttached",
+              "Organization": {
+                "Moid": "{{ intersight_org.api_response.Moid }}"
+              },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+              UuidAddressType: "POOL",
+              UuidPool: {
+                "Moid": "{{ uuid_pool_details.api_response.Moid }}"
+              }
+            }
+  when: (server_generation == "M8") and (server_cpu_type == "AMD")
+
+# Create Server Profile Template for Intel M7 Worker Blade Nodes
+- name: "Configure Server Profile Template for Intel M7 Worker Blade Nodes"
+  vars:
+        api_info: &api_info_assign_bworker
+          api_private_key: "{{ api_private_key }}"
+          api_key_id: "{{ api_key_id }}"
+          api_uri: "{{ api_uri | default(omit) }}"
+          validate_certs: "{{ validates_certs | default(omit) }}"
+          state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+          <<: *api_info_assign_bworker
+          resource_path: /server/ProfileTemplates
+          query_params:
+            $filter: "Name eq '{{ name_of_worker_blade_SPT }}'"
+          api_body: {
+              "Action": "No-op",
+              "Name": "{{ name_of_worker_blade_SPT }}",
+              "Description": "{{ description_of_worker_blade_SPT }}",
+              ClassId: "server.ProfileTemplate",
+              "PolicyBucket": [
+                {
+                  "Moid": "{{ m7_bios_policy_details.api_response.Moid }}",
+                  "ObjectType": "bios.Policy"
+                },
+                {
+                  "Moid": "{{ m2_boot_order_policy_details.api_response.Moid }}",
+                  "ObjectType": "boot.PrecisionPolicy"
+                },
+                {
+                  "Moid": "{{ server_power_policy_details.api_response.Moid }}",
+                  "ObjectType": "power.Policy"
+                },
+                {
+                  "Moid": "{{ imc_access_policy_details.api_response.Moid }}",
+                  "ObjectType": "access.Policy"
+                },
+                {
+                  "Moid": "{{ ipmi_policy_details.api_response.Moid }}",
+                  "ObjectType": "ipmioverlan.Policy"
+                },
+                {
+                  "Moid": "{{ local_user_policy_details.api_response.Moid }}",
+                  "ObjectType": "iam.EndPointUserPolicy"
+                },
+                {
+                  "Moid": "{{ m2_raid_policy_details.api_response.Moid }}",
+                  "ObjectType": "storage.StoragePolicy"
+                },
+                {
+                  "Moid": "{{ worker_lan_connectivity_policy_details.api_response.Moid }}",
+                  "ObjectType": "vnic.LanConnectivityPolicy"
+                },
+                {
+                  "Moid": "{{ kvm_policy_details.api_response.Moid }}",
+                  "ObjectType": "kvm.Policy"
+                },
+                {
+                  "Moid": "{{ vmedia_policy_details.api_response.Moid }}",
+                  "ObjectType": "vmedia.Policy"
+                }
+              ],
+              "TargetPlatform": "FIAttached",
+              "Organization": {
+                "Moid": "{{ intersight_org.api_response.Moid }}"
+              },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+              UuidAddressType: "POOL",
+              UuidPool: {
+                "Moid": "{{ uuid_pool_details.api_response.Moid }}"
+              }
+            }
+  when: (server_generation == "M7") and (server_cpu_type == "Intel")
+
+# Create Server Profile Template for Intel M7 Worker Rackmount Nodes
+- name: "Configure Server Profile Template for Intel M7 Worker Rackmount Nodes"
+  vars:
+        api_info: &api_info_assign_cworker
+          api_private_key: "{{ api_private_key }}"
+          api_key_id: "{{ api_key_id }}"
+          api_uri: "{{ api_uri | default(omit) }}"
+          validate_certs: "{{ validates_certs | default(omit) }}"
+          state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+          <<: *api_info_assign_cworker
+          resource_path: /server/ProfileTemplates
+          query_params:
+            $filter: "Name eq '{{ name_of_worker_rack_SPT }}'"
+          api_body: {
+              "Action": "No-op",
+              "Name": "{{ name_of_worker_rack_SPT }}",
+              "Description": "{{ description_of_worker_rack_SPT }}",
+              ClassId: "server.ProfileTemplate",
+              "PolicyBucket": [
+                {
+                  "Moid": "{{ m7_bios_policy_details.api_response.Moid }}",
+                  "ObjectType": "bios.Policy"
+                },
+                {
+                  "Moid": "{{ m2_boot_order_policy_details.api_response.Moid }}",
+                  "ObjectType": "boot.PrecisionPolicy"
+                },
+                {
+                  "Moid": "{{ server_thermal_policy_details.api_response.Moid }}",
+                  "ObjectType": "thermal.Policy"
+                },
+                {
+                  "Moid": "{{ imc_access_policy_details.api_response.Moid }}",
+                  "ObjectType": "access.Policy"
+                },
+                {
+                  "Moid": "{{ ipmi_policy_details.api_response.Moid }}",
+                  "ObjectType": "ipmioverlan.Policy"
+                },
+                {
+                  "Moid": "{{ local_user_policy_details.api_response.Moid }}",
+                  "ObjectType": "iam.EndPointUserPolicy"
+                },
+                {
+                  "Moid": "{{ m2_raid_policy_details.api_response.Moid }}",
+                  "ObjectType": "storage.StoragePolicy"
+                },
+                {
+                  "Moid": "{{ worker_lan_connectivity_policy_details.api_response.Moid }}",
+                  "ObjectType": "vnic.LanConnectivityPolicy"
+                },
+                {
+                  "Moid": "{{ kvm_policy_details.api_response.Moid }}",
+                  "ObjectType": "kvm.Policy"
+                },
+                {
+                  "Moid": "{{ vmedia_policy_details.api_response.Moid }}",
+                  "ObjectType": "vmedia.Policy"
+                }
+              ],
+              "TargetPlatform": "FIAttached",
+              "Organization": {
+                "Moid": "{{ intersight_org.api_response.Moid }}"
+              },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+              UuidAddressType: "POOL",
+              UuidPool: {
+                "Moid": "{{ uuid_pool_details.api_response.Moid }}"
+              }
+            }
+  when: (server_generation == "M7") and (server_cpu_type == "Intel")
+
+# Create Server Profile Template for M6 Worker Blade Nodes
+- name: "Configure Server Profile Template for M6 Worker Blade Nodes"
+  vars:
+        api_info: &api_info_6bworker
+          api_private_key: "{{ api_private_key }}"
+          api_key_id: "{{ api_key_id }}"
+          api_uri: "{{ api_uri | default(omit) }}"
+          validate_certs: "{{ validates_certs | default(omit) }}"
+          state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+          <<: *api_info_6bworker
+          resource_path: /server/ProfileTemplates
+          query_params:
+            $filter: "Name eq '{{ name_of_worker_blade_SPT }}'"
+          api_body: {
+              "Action": "No-op",
+              "Name": "{{ name_of_worker_blade_SPT }}",
+              "Description": "{{ description_of_worker_blade_SPT }}",
+              ClassId: "server.ProfileTemplate",
+              "PolicyBucket": [
+                {
+                  "Moid": "{{ m6_bios_policy_details.api_response.Moid }}",
+                  "ObjectType": "bios.Policy"
+                },
+                {
+                  "Moid": "{{ m2_boot_order_policy_details.api_response.Moid }}",
+                  "ObjectType": "boot.PrecisionPolicy"
+                },
+                {
+                  "Moid": "{{ server_power_policy_details.api_response.Moid }}",
+                  "ObjectType": "power.Policy"
+                },
+                {
+                  "Moid": "{{ imc_access_policy_details.api_response.Moid }}",
+                  "ObjectType": "access.Policy"
+                },
+                {
+                  "Moid": "{{ ipmi_policy_details.api_response.Moid }}",
+                  "ObjectType": "ipmioverlan.Policy"
+                },
+                {
+                  "Moid": "{{ local_user_policy_details.api_response.Moid }}",
+                  "ObjectType": "iam.EndPointUserPolicy"
+                },
+                {
+                  "Moid": "{{ m2_raid_policy_details.api_response.Moid }}",
+                  "ObjectType": "storage.StoragePolicy"
+                },
+                {
+                  "Moid": "{{ worker_lan_connectivity_policy_details.api_response.Moid }}",
+                  "ObjectType": "vnic.LanConnectivityPolicy"
+                },
+                {
+                  "Moid": "{{ kvm_policy_details.api_response.Moid }}",
+                  "ObjectType": "kvm.Policy"
+                },
+                {
+                  "Moid": "{{ vmedia_policy_details.api_response.Moid }}",
+                  "ObjectType": "vmedia.Policy"
+                }
+              ],
+              "TargetPlatform": "FIAttached",
+              "Organization": {
+                "Moid": "{{ intersight_org.api_response.Moid }}"
+              },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+              UuidAddressType: "POOL",
+              UuidPool: {
+                "Moid": "{{ uuid_pool_details.api_response.Moid }}"
+              }
+            }
+  when: (server_generation == "M6") and (server_cpu_type == "Intel")
+
+# Create Server Profile Template for M6 Worker Rackmount Nodes
+- name: "Configure Server Profile Template for M6 Worker Rackmount Nodes"
+  vars:
+        api_info: &api_info_6cworker
+          api_private_key: "{{ api_private_key }}"
+          api_key_id: "{{ api_key_id }}"
+          api_uri: "{{ api_uri | default(omit) }}"
+          validate_certs: "{{ validates_certs | default(omit) }}"
+          state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+          <<: *api_info_6cworker
+          resource_path: /server/ProfileTemplates
+          query_params:
+            $filter: "Name eq '{{ name_of_worker_rack_SPT }}'"
+          api_body: {
+              "Action": "No-op",
+              "Name": "{{ name_of_worker_rack_SPT }}",
+              "Description": "{{ description_of_worker_rack_SPT }}",
+              ClassId: "server.ProfileTemplate",
+              "PolicyBucket": [
+                {
+                  "Moid": "{{ m6_bios_policy_details.api_response.Moid }}",
+                  "ObjectType": "bios.Policy"
+                },
+                {
+                  "Moid": "{{ m2_boot_order_policy_details.api_response.Moid }}",
+                  "ObjectType": "boot.PrecisionPolicy"
+                },
+                {
+                  "Moid": "{{ server_thermal_policy_details.api_response.Moid }}",
+                  "ObjectType": "thermal.Policy"
+                },
+                {
+                  "Moid": "{{ imc_access_policy_details.api_response.Moid }}",
+                  "ObjectType": "access.Policy"
+                },
+                {
+                  "Moid": "{{ ipmi_policy_details.api_response.Moid }}",
+                  "ObjectType": "ipmioverlan.Policy"
+                },
+                {
+                  "Moid": "{{ local_user_policy_details.api_response.Moid }}",
+                  "ObjectType": "iam.EndPointUserPolicy"
+                },
+                {
+                  "Moid": "{{ m2_raid_policy_details.api_response.Moid }}",
+                  "ObjectType": "storage.StoragePolicy"
+                },
+                {
+                  "Moid": "{{ worker_lan_connectivity_policy_details.api_response.Moid }}",
+                  "ObjectType": "vnic.LanConnectivityPolicy"
+                },
+                {
+                  "Moid": "{{ kvm_policy_details.api_response.Moid }}",
+                  "ObjectType": "kvm.Policy"
+                },
+                {
+                  "Moid": "{{ vmedia_policy_details.api_response.Moid }}",
+                  "ObjectType": "vmedia.Policy"
+                }
+              ],
+              "TargetPlatform": "FIAttached",
+              "Organization": {
+                "Moid": "{{ intersight_org.api_response.Moid }}"
+              },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+              UuidAddressType: "POOL",
+              UuidPool: {
+                "Moid": "{{ uuid_pool_details.api_response.Moid }}"
+              }
+            }
+  when: server_generation == "M6"

@@ -1,0 +1,62 @@
+---
+
+- name: "Configure LAN Connectivity Policy for Control Plane Nodes"
+  vars:
+    api_info: &api_info_cp
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  block:
+  - name: "LAN Connectivity Policy for Control Plane Nodes"
+    cisco.intersight.intersight_rest_api:
+          <<: *api_info_cp
+          resource_path: /vnic/LanConnectivityPolicies
+          query_params:
+             $filter: "Name eq '{{ name_of_cp_lan_connectivity_policy }}'"
+          api_body: {
+              "Name": "{{ name_of_cp_lan_connectivity_policy }}",
+              "Description": "{{ description_of_cp_lan_connectivity_policy }}",
+              "TargetPlatform": "FIAttached",
+              "AzureQosEnabled": false,
+              "IqnAllocationType": "None",
+              "PlacementMode": "custom",
+              "IqnPool": "",
+              "StaticIqnName": "",
+
+              "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+               },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}] 
+           }
+    register: cp_lan_connectivity_policy
+
+  - name: "Add {{ name_of_control_plane_vNIC }} to LAN Connectivity Policy"
+    cisco.intersight.intersight_rest_api:
+        <<: *api_info_cp
+        resource_path: /bulk/MoCloners
+        query_params:
+           $filter: "Name eq '{{ name_of_control_plane_vNIC }}'"
+        api_body: {
+             "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+             },
+             "Sources": [{
+               "Moid": "{{ baremetal_vnic_template.api_response.Moid }}",
+               "ObjectType": "vnic.VnicTemplate"
+             }],
+             "Targets": [{
+               "LanConnectivityPolicy": "{{ cp_lan_connectivity_policy.api_response.Moid }}",
+               "MacAddressType": "POOL",
+               "Name": "{{ name_of_control_plane_vNIC }}",
+               "ObjectType": "vnic.EthIf",
+               "Order": 0,
+               "Placement": {
+                  "AutoPciLink": true,
+                  "AutoSlotId": true
+               },
+             }],
+             "WorkflowNameSuffix": "Add vNIC from a Template"
+         }

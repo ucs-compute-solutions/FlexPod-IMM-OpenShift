@@ -1,0 +1,88 @@
+---
+  - name: "Configure Intel M7 Virtualization BIOS Policy"
+    cisco.intersight.intersight_bios_policy:
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      organization: "{{ org_name }}"
+      name: "{{ name_of_m7_bios_policy }}"
+      description: "{{ description_of_m7_bios_policy }}"
+      tags:
+        - Key: "configmode"
+          Value: "ansible"
+        - Key: "prefix"
+          Value: "{{ prefix }}"
+      cdn_enable: "enabled"
+      processor_c6report: "enabled"
+      work_load_config: "Balanced"
+    register: m7_bios_policy
+    when: server_cpu_type == "Intel"
+
+  - name: "Configure Intel M6 Virtualization BIOS Policy"
+    cisco.intersight.intersight_bios_policy:
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      organization: "{{ org_name }}"
+      name: "{{ name_of_m6_bios_policy }}"
+      description: "{{ description_of_m6_bios_policy }}"
+      tags:
+        - Key: "configmode"
+          Value: "ansible"
+        - Key: "prefix"
+          Value: "{{ prefix }}"
+      cdn_enable: "enabled"
+      cpu_perf_enhancement: "Auto"
+      energy_efficient_turbo: "enabled"
+      nvmdimm_perform_config: "Balanced Profile"
+      processor_c1e: "enabled"
+      processor_c6report: "enabled"
+      lom_ports_all_state: "disabled"
+    register: m6_bios_policy
+    when: server_cpu_type == "Intel"
+
+# For X215c M8, and C225/245 M8
+  - name: "Configure AMD M8 Virtualization BIOS Policy"
+    cisco.intersight.intersight_bios_policy:
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      organization: "{{ org_name }}"
+      name: "{{ name_of_m8_bios_policy }}"
+      description: "{{ description_of_m8_bios_policy }}"
+      tags:
+        - Key: "configmode"
+          Value: "ansible"
+        - Key: "prefix"
+          Value: "{{ prefix }}"
+      cdn_enable: "enabled"
+      cbs_cmn_gnb_smucppc: "enabled"
+    register: m8_bios_policy
+    when: server_cpu_type == "AMD"
+
+  - name: "Configure AMD M6 Virtualization BIOS Policy"
+    cisco.intersight.intersight_bios_policy:
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      organization: "{{ org_name }}"
+      name: "{{ name_of_m6_bios_policy }}"
+      description: "{{ description_of_m6_bios_policy }}"
+      tags:
+        - Key: "configmode"
+          Value: "ansible"
+        - Key: "prefix"
+          Value: "{{ prefix }}"
+      cdn_enable: "enabled"
+      cbs_cmn_apbdis: "1"
+      cbs_cmn_cpu_cpb: "Auto"
+      cbs_cmn_cpu_global_cstate_ctrl: "Auto"
+      cbs_cmn_cpu_l1stream_hw_prefetcher: "Auto"
+      cbs_cmn_cpu_l2stream_hw_prefetcher: "Auto"
+      cbs_cmn_determinism_slider: "Power"
+      cbs_cmn_efficiency_mode_en: "Auto"
+      cbs_cmn_fixed_soc_pstate: "P0"
+      cbs_cmn_gnb_nb_iommu: "Auto"
+      cbs_df_cmn_acpi_srat_l3numa: "enabled"
+      cbs_df_cmn_dram_nps: "NPS4"
+      cisco_xgmi_max_speed: "disabled"
+      smt_mode: "Auto"
+      svm_mode: "enabled"
+    register: m6_bios_policy
+    when: server_cpu_type == "AMD"

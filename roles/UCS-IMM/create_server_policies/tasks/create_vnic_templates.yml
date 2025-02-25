@@ -1,0 +1,125 @@
+---
+
+- name: "Configure vNIC Templates"
+  vars:
+    api_info: &api_info
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      update_method: "post"
+      state: "{{ state | default(omit) }}"
+
+  block:
+  - name: "vNIC Template for BareMetal-MGMT"
+    cisco.intersight.intersight_rest_api:
+      <<: *api_info
+      resource_path: /vnic/VnicTemplates
+      query_params:
+         $filter: "Name eq '{{ name_of_vnic_template_baremetal }}'"
+      api_body: {
+         "Cdn": {
+            "Source": "vnic"
+         },
+         "EnableOverride": false,
+         "EthAdapterPolicy": "{{ ethernet_adapter_linuxv2_policy.api_response.Moid }}",
+         "EthQosPolicy": "{{ mtu1500_ethernet_qos_policy.api_response.Moid }}",
+         "FabricEthNetworkControlPolicy": "{{ ethernet_network_control_policy.api_response.Moid }}",
+         "FabricEthNetworkGroupPolicy": ["{{ management_network_group_policy.api_response.Moid }}"],
+         "FailoverEnabled": true,
+         "MacPool": "{{ mac_pool_fi_a_details.api_response.Moid }}",
+         "Name": "{{ name_of_vnic_template_baremetal }}",
+         "Description": "{{ description_of_vnic_template_baremetal }}",
+         "Organization": {
+            "Moid": "{{ intersight_org.api_response.Moid }}",
+         },
+         "SwitchId": "A",
+         Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}]
+      }
+    register: baremetal_vnic_template
+
+  - name: "vNIC Template for iSCSI-NVMe-TCP-A"
+    cisco.intersight.intersight_rest_api:
+          <<: *api_info
+          resource_path: /vnic/VnicTemplates
+          query_params:
+             $filter: "Name eq '{{ name_of_vnic_template_iscsi_nvme_tcp_a }}'"
+          api_body: {
+            "Name": "{{ name_of_vnic_template_iscsi_nvme_tcp_a }}",
+            "Description": "{{ description_of_vnic_template_iscsi_nvme_tcp_a }}",
+            "Cdn": {
+               "Source": "vnic"
+            },
+            "EnableOverride": false,
+            "EthAdapterPolicy": "{{ ethernet_adapter_16rxq_policy.api_response.Moid }}",
+            "EthQosPolicy": "{{ mtu9000_ethernet_qos_policy.api_response.Moid }}",
+            "FabricEthNetworkControlPolicy": "{{ ethernet_network_control_policy.api_response.Moid }}",
+            "FabricEthNetworkGroupPolicy": ["{{ iscsi_nvme_a_network_group_policy.api_response.Moid }}"],
+            "FailoverEnabled": false,
+            "MacPool": "{{ mac_pool_fi_a_details.api_response.Moid }}",
+            "SwitchId": "A",
+            "Organization": {
+               "Moid": "{{ intersight_org.api_response.Moid }}"
+            },
+            Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}] 
+         }
+    register: iscsi_nvme_a_vnic_template
+    
+  - name: "vNIC Template for iSCSI-NVMe-TCP-B"
+    cisco.intersight.intersight_rest_api:
+          <<: *api_info
+          resource_path: /vnic/VnicTemplates
+          query_params:
+             $filter: "Name eq '{{ name_of_vnic_template_iscsi_nvme_tcp_b }}'"
+          api_body: {
+            "Name": "{{ name_of_vnic_template_iscsi_nvme_tcp_b }}",
+            "Description": "{{ description_of_vnic_template_iscsi_nvme_tcp_b }}",
+            "Cdn": {
+               "Source": "vnic"
+            },
+            "EnableOverride": false,
+            "EthAdapterPolicy": "{{ ethernet_adapter_16rxq_policy.api_response.Moid }}",
+            "EthQosPolicy": "{{ mtu9000_ethernet_qos_policy.api_response.Moid }}",
+            "FabricEthNetworkControlPolicy": "{{ ethernet_network_control_policy.api_response.Moid }}",
+            "FabricEthNetworkGroupPolicy": ["{{ iscsi_nvme_b_network_group_policy.api_response.Moid }}"],
+            "FailoverEnabled": false,
+            "MacPool": "{{ mac_pool_fi_b_details.api_response.Moid }}",
+            "SwitchId": "B",
+            "Organization": {
+               "Moid": "{{ intersight_org.api_response.Moid }}"
+            },
+            Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}] 
+         }
+    register: iscsi_nvme_b_vnic_template
+
+  - name: "vNIC Template for NFS"
+    cisco.intersight.intersight_rest_api:
+          <<: *api_info
+          resource_path: /vnic/VnicTemplates
+          query_params:
+             $filter: "Name eq '{{ name_of_vnic_template_nfs }}'"
+          api_body: {
+            "Name": "{{ name_of_vnic_template_nfs }}",
+            "Description": "{{ description_of_vnic_template_nfs }}",
+            "Cdn": {
+               "Source": "vnic"
+            },
+            "EnableOverride": false,
+            "EthAdapterPolicy": "{{ ethernet_adapter_16rxq_policy.api_response.Moid }}",
+            "EthQosPolicy": "{{ mtu9000_ethernet_qos_policy.api_response.Moid }}",
+            "FabricEthNetworkControlPolicy": "{{ ethernet_network_control_policy.api_response.Moid }}",
+            "FabricEthNetworkGroupPolicy": ["{{ nfs_network_group_policy.api_response.Moid }}"],
+            "FailoverEnabled": true,
+            "MacPool": "{{ mac_pool_fi_b_details.api_response.Moid }}",
+            "SwitchId": "B",
+            "Organization": {
+               "Moid": "{{ intersight_org.api_response.Moid }}"
+            },
+            Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}] 
+         }
+    register: nfs_vnic_template
+    when: configure_nfs == 'true'
+
+
+
+  

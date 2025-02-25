@@ -1,0 +1,7 @@
+---
+
+description_of_cp_blade_SPT: "Server Profile Template for Control Plane Nodes; X- or B-Series Blades"
+description_of_cp_rack_SPT: "Server Profile Template for Control Plane Nodes; C-Series Rackmounts"
+description_of_worker_blade_SPT: "Server Profile Template for Worker Nodes or Control Plane plus Worker Nodes; X- or B-Series Blades"
+description_of_worker_rack_SPT: "Server Profile Template for Worker Nodes or Control Plane plus Worker Nodes; C-Series Rackmounts"
+

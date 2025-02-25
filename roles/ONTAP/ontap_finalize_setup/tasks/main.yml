@@ -1,0 +1,45 @@
+---
+# Configure DNS for OCP SVM
+- name: Configure DNS for OCP SVM
+  netapp.ontap.na_ontap_dns:
+    state: present
+    vserver: "{{item.svm_name}}"
+    nameservers: "{{item.dns_server_svm}}"
+    domains: "{{item.dns_domain_svm}}"
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{tenant_specs}}"
+  tags:
+    - ontap_config_dns_svm
+
+# Create and enable auditing configuration for the Storage Virtual Machine
+- name: Create and enable auditing configuration for the SVM
+  netapp.ontap.na_ontap_vserver_audit:
+    state: present
+    log_path: "/{{tenant_specs.audit_log_volume_specs.name}}"
+    vserver: "{{tenant_specs.svm_name}}"
+    enabled: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  tags:
+    - ontap_svm_audit_config
+
+# Invoke a Test AutoSupport
+- name: Send a test to AutoSupport
+  netapp.ontap.na_ontap_autosupport_invoke:
+    autosupport_message: "{{autosupport_message}}"
+    type: all
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  tags:
+    - ontap_invoke_autosupport

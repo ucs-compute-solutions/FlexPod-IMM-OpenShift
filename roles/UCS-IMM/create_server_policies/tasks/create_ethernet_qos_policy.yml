@@ -1,0 +1,62 @@
+---
+- name: "Configure MTU 1500 Ethernet QoS Policy"
+  vars:
+    api_info: &api_info_mtu1500
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+    <<: *api_info_mtu1500
+    resource_path: /vnic/EthQosPolicies
+    query_params:
+       $filter: "Name eq '{{ name_of_mtu1500_eth_qos_policy }}'"
+    api_body: {
+          "Name": "{{ name_of_mtu1500_eth_qos_policy }}",
+          "Description": "{{ description_of_mtu1500_eth_qos_policy }}",
+
+          "Organization": {
+             "Moid": "{{ intersight_org.api_response.Moid }}"
+           },
+          Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+          "Mtu": "{{ mtu1500 }}",
+          "Cos": "{{ class_of_service }}",
+          "Burst": "{{ burst }}",
+          "Priority": "{{ priority }}",
+          "RateLimit": "{{ rate_limit }}",
+          "TrustHostCos": false
+        }
+  register: mtu1500_ethernet_qos_policy
+
+- name: "Configure MTU 9000 Ethernet QoS Policy"
+  vars:
+    api_info: &api_info_mtu9000
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+    <<: *api_info_mtu9000
+    resource_path: /vnic/EthQosPolicies
+    query_params:
+       $filter: "Name eq '{{ name_of_mtu9000_eth_qos_policy }}'"
+    api_body: {
+          "Name": "{{ name_of_mtu9000_eth_qos_policy }}",
+          "Description": "{{ description_of_mtu9000_eth_qos_policy }}",
+
+          "Organization": {
+             "Moid": "{{ intersight_org.api_response.Moid }}"
+           },
+          Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+          "Mtu": "{{ mtu9000 }}",
+          "Cos": "{{ class_of_service }}",
+          "Burst": "{{ burst }}",
+          "Priority": "{{ priority }}",
+          "RateLimit": "{{ rate_limit }}",
+          "TrustHostCos": false
+        }
+  register: mtu9000_ethernet_qos_policy

@@ -1,0 +1,109 @@
+# This is the top-level variable file that will be used for the FlexPod with OpenShift on BareMetal setup. 
+# Currently only M.2 Boot with all IP storage is supported. Notice that the configure_iscsi variable is set to true.
+# The first iteration of these scripts assumes that NFS, iSCSI, and NVMe-TCP are being configured.
+#
+# Setting the following variables to anything but 'true' ('false' is suggested when not using 'true'), will cause the 
+# protocol to not be configured.
+configure_iscsi: 'true'     # We are assuming that configure_iscsi is always true
+configure_nvme_tcp: 'true'  # Only set this to 'true' if configure_iscsi is set to 'true'
+
+configure_fc: 'false'        # FC is not currently supported on UCS or in Trident. This is being left for future use.
+configure_fc_nvme: 'false'   # Only set this to 'true' if configure_fc is set to 'true'  
+
+configure_nfs: 'true'       # In FlexPod, nfs is always used unless you have an All SAN Array (ASA)
+#
+use_nexus_ntp_distribution: 'true' # If not using Nexus NTP distribution, set this to 'false'.
+openshift_ntp_servers:   # Assigned NTP Addresses in the BareMetal/MGMT VLAN to be used by OpenShift hosts. If not using Nexus NTP distribution, set these still needed values to global NTP servers.
+  - ip_address: "10.102.2.3"
+  - ip_address: "10.102.2.4"
+
+# Update the following lines to setup OpenShift DNS Server(s)
+dns_servers:
+  - ip_address: "10.102.2.249"
+  - ip_address: "10.102.2.250"
+
+# DNS Domain Name for OpenShift Domain
+dns_domain_name: "ocp.flexpodb4.cisco.com"
+#
+# This is the list of all the VLANs that will be added to Nexus, NetApp Storage, and UCS.
+# VLAN Names are adjustable and can be modified in here
+# Comment out any VLANs that are not used here and below (iSCSI and NVMe-TCP)
+#
+oob_vlan_name: 'OOB-MGMT' # Out of Band Mgmt VLAN
+oob_vlan_id: 1020
+baremetal_vlan_name: 'OCP-BareMetal-MGMT' # IN BAND BareMetal/Management VLAN
+baremetal_vlan_id: 1022
+nfs_vlan_name: 'OCP-NFS' # NFS Traffic between OpenShift and Storage
+nfs_vlan_id: 3052
+iscsiA_vlan_name: 'OCP-iSCSI-A' # iSCSI-A VLAN (if needed)
+iscsiA_vlan_id: 3012
+iscsiB_vlan_name: 'OCP-iSCSI-B' # iSCSI-B VLAN (if needed)
+iscsiB_vlan_id: 3022
+nvme_tcpA_vlan_name: 'OCP-NVMe-TCP-A' # NVMe-TCP-A VLAN (if needed)
+nvme_tcpA_vlan_id: 3032
+nvme_tcpB_vlan_name: 'OCP-NVMe-TCP-B' # NVMe-TCP-B VLAN (if needed)
+nvme_tcpB_vlan_id: 3042
+#
+# lan_state should be set to 'present' to configure the objects
+# In future, this parameter will be used for deleting the configuration
+#
+lan_state : 'present'
+#
+# VLAN Lists - Comment out or remove any VLANs not being used.
+#
+# The ib_mgmt_vlan_list contains one entry, the BareMetal/MGMT VLAN.
+#
+ib_mgmt_vlan_list:
+  - name: "{{ baremetal_vlan_name }}"
+    id: "{{ baremetal_vlan_id }}"
+    native: 'no'
+    state: "{{ lan_state }}"
+#
+# The storage_vlan_list contains VLANs that are configured on the storage controllers.
+# These VLANs are also configured in the UCS and in the Nexus switches. This list has
+# two extra fields, storage_protocol, and fabric. Do not remove these extra fields.
+#
+storage_vlan_list:
+  - name: "{{ nfs_vlan_name }}"
+    id: "{{ nfs_vlan_id }}"
+    native: 'no'
+    storage_protocol: NFS
+    state: "{{lan_state}}"
+    # ISCSI A and B VLANs should be deleted or commented out for Fiber-Channel-Only deployments
+  - name: "{{ iscsiA_vlan_name }}"
+    id: "{{ iscsiA_vlan_id }}"
+    native: 'no'
+    storage_protocol: iSCSI
+    fabric: A
+    state: "{{lan_state}}"
+  - name: "{{ iscsiB_vlan_name }}"
+    id: "{{ iscsiB_vlan_id }}"
+    native: 'no'
+    storage_protocol: iSCSI
+    fabric: B
+    state: "{{lan_state}}"
+  - name: "{{ nvme_tcpA_vlan_name }}"
+    id: "{{ nvme_tcpA_vlan_id }}"
+    native: 'no'
+    storage_protocol: NVMe
+    fabric: A
+    state: "{{lan_state}}"
+  - name: "{{ nvme_tcpB_vlan_name }}"
+    id: "{{ nvme_tcpB_vlan_id }}"
+    native: 'no'
+    storage_protocol: NVMe
+    fabric: B
+    state: "{{lan_state}}"
+
+# VLANs definitions below will be used to setup trunk ports on Nexus Switches
+# all_vlans_list: for vpc_peer_link and UCS FI trunk ports
+# These VLANs must be same or a subset of the vlan_list abovea
+# Comment out or remove any VLANs that are not used (iSCSI and NVMe-TCP)
+# In future, these values will be auto-generated
+#
+all_vlans_list: "{{ baremetal_vlan_id }},{{ nfs_vlan_id }},{{ iscsiA_vlan_id }},{{ iscsiB_vlan_id }},{{ nvme_tcpA_vlan_id }},{{ nvme_tcpB_vlan_id }}"
+# storage_vlans_list: for storage uplink trunk ports
+storage_vlans_list: "{{ baremetal_vlan_id }},{{ nfs_vlan_id }},{{ iscsiA_vlan_id }},{{ iscsiB_vlan_id }},{{ nvme_tcpA_vlan_id }},{{ nvme_tcpB_vlan_id }}"
+# mgmt_vlans_list: for uplink/management switch trunk port
+mgmt_vlans_list: "{{ baremetal_vlan_id }}"
+#

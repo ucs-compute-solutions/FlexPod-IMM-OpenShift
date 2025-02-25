@@ -1,0 +1,30 @@
+---
+  # This Task adds Nexus 9K NTP Distribution VRF and interfaces for the FlexPod Tenant
+  
+  - name: Create NTP Distribution Interface in VRF
+    cisco.nxos.nxos_command:
+      commands:
+        - configure terminal
+        - interface Vlan{{ ntp_distribution_vlan }}
+        - vrf member {{ openshift_vrf_name }}
+        - ip address {{ OpenShift_ntp_dist_IP }}
+        - no shutdown
+    when: use_nexus_ntp_distribution == 'true'
+#     vrf: "{{ openshift_vrf_name }}"
+#      interface: Vlan"{{ ntp_distribution_vlan }}"
+#      state: present  
+#
+#  - name: Create NTP Distribution Interface
+#    cisco.nxos.nxos_l3_interfaces:
+#      config:
+#      - name: Vlan"{{ ntp_distribution_vlan }}"
+#        ipv4:
+#        - address: "{{ OpenShift_ntp_dist_IP }}"
+#    when: use_nexus_ntp_distribution == 'true'
+#
+#  - name: Enable NTP Distribution Interface
+#    cisco.nxos.nxos_interfaces:
+#      config:
+#      - name: Vlan"{{ ntp_distribution_vlan }}"
+#        enabled: true
+#    when: use_nexus_ntp_distribution == 'true'

@@ -1,0 +1,35 @@
+---
+#
+# Add OpenShift Trunk VLANs for Peer-Link and UCS FI Port-Channels
+#
+  - name: Enabling all vlans on peer-link and UCS FI Port-Channels
+    cisco.nxos.nxos_l2_interfaces:
+      config:
+        - name: "{{ item.interface }}"
+          trunk:
+            allowed_vlans: "{{ all_vlans_list }}"
+      state: merged
+    with_list: "{{ peerlink_PC + FI_A_PC + FI_B_PC }}"
+#
+# Add OpenShift VLANs on mgmt Port-Channels
+#
+  - name: Enabling management vlans on uplink Port-Channels
+    cisco.nxos.nxos_l2_interfaces:
+      config:
+        - name: "{{ item.interface }}"
+          trunk:
+            allowed_vlans: "{{ mgmt_vlans_list }}"
+      state: merged
+    with_list: "{{ uplink_PC }}"
+#
+# Add OpenShift VLANs for storage Port-Channels
+#
+  - name: Enabling storage vlans on Storage Port-Channels
+    cisco.nxos.nxos_l2_interfaces:
+      config:
+        - name: "{{ item.interface }}"
+          trunk:
+            allowed_vlans: "{{ storage_vlans_list }}"
+      state: merged
+    with_list: "{{ storage_A_PC + storage_B_PC }}"
+#

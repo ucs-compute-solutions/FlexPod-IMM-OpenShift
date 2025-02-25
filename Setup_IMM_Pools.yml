@@ -1,0 +1,19 @@
+---
+# Create various pools. The pools being created are:
+# - IP Pools for Mgmt
+# - IQN Pools for iSCSI (if needed)
+# - iSCSI IP pools (if needed)
+# - WWxx Pools for FC (if needed)
+# - UUID pools
+# - MAC address Pools
+#
+- name: "Create Various Pools"
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - group_vars/secrets.yml
+    - group_vars/ucs.yml
+
+  # Create Various Pool
+  roles:
+    - role: UCS-IMM/create_pools

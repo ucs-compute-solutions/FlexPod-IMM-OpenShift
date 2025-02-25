@@ -1,0 +1,16 @@
+---
+  # Create Tenant VRF for NTP Distribution
+  - name: Create VRF
+    cisco.nxos.nxos_vrf:
+      name: "{{ openshift_vrf_name }}"
+      state: present
+
+  # This Task sets the default gateway for the NTP Distribution Interfaces. 
+  
+  - name: Set Default Gateway
+    cisco.nxos.nxos_command:
+      commands:
+        - configure terminal
+        - vrf context {{ openshift_vrf_name }}
+        - ip route 0.0.0.0/0 {{ ntp_distribution_gw }}
+    when: use_nexus_ntp_distribution == 'true'

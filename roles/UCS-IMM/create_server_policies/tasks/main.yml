@@ -1,0 +1,80 @@
+---
+# Create  server policies specific to Converged Infrastrucure stack
+- name: "Create IMM Server Policies"
+  vars:
+    api_info: &api_info_org_moid
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+  intersight_rest_api:
+    <<: *api_info_org_moid
+    resource_path: /organization/Organizations
+    query_params:
+      $filter: "Name eq '{{ org_name }}'"
+  register: intersight_org
+  delegate_to: localhost
+  tags: always
+  run_once: true
+
+# Collect information on existence of Boot Order Policy, LAN Connectivity Policy, and
+# SAN Connectivity Policy
+- include_tasks: gather_policy_info.yml
+
+# Collect information about various pools
+- include_tasks: gather_pool_info.yml
+
+# Create Bios Policy
+- include_tasks: create_bios_policies.yml
+
+# Create Boot Order Policy for M.2 Boot
+- include_tasks: create_boot_order_policy.yml
+  when: m2_boot_order_policy_details.api_response.Moid is not defined
+
+# Create Server Power Policy
+- include_tasks: create_server_power_policy.yml
+
+# Create Server Thermal Policy
+- include_tasks: create_server_thermal_policy.yml
+
+# Create IMC Access Policy
+- include_tasks: create_imc_policy.yml
+
+# Create Virtual KVM Policy
+- include_tasks: create_kvm_policy.yml
+
+# Create vMedia Policy
+- include_tasks: create_vmedia_policy.yml
+
+# Create IPMI over LAN Policy to enable IPMI over LAN
+- include_tasks: create_ipmi_policy.yml
+
+# Create Local User Policy to allow KVM Access
+- include_tasks: create_local_user_policy.yml
+
+# Create M.2 RAID Storage Policy
+- include_tasks: create_m2_raid_policy.yml
+
+# Create Ethernet QoS Policies
+- include_tasks: create_ethernet_qos_policy.yml
+
+# Create Ethernet Network Control Policy
+- include_tasks: create_ethernet_network_control_policy.yml
+
+# Create Ethernet Adapter Policies
+- include_tasks: create_ethernet_adapter_policies.yml
+
+# Create Ethernet Network Group Policy - VLAN details for vNICs assigned for Management/NFS/vMotion/iSCSI
+- include_tasks: create_ethernet_network_group_policy.yml
+
+# Create vNIC Templates for BareMetal-MGMT, iSCSI-NVMe-TCP-A and B, and NFS
+- include_tasks: create_vnic_templates.yml
+
+# Configure Control Plane LAN Connectivity Policy
+- include_tasks: create_cp_lan_connectivity_policy.yml
+  when: cp_lan_connectivity_policy_details.api_response.Moid is not defined
+
+# Configure Worker LAN Connectivity Policy
+- include_tasks: create_worker_lan_connectivity_policy.yml
+  when: worker_lan_connectivity_policy_details.api_response.Moid is not defined

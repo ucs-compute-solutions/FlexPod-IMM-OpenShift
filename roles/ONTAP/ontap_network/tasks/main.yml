@@ -1,0 +1,218 @@
+---
+# Get the total number of port count across all nodes in the ONTAP Cluster
+- name: Get the total number of port count across all nodes in the ONTAP Cluster
+  ansible.builtin.set_fact:
+    total_port_count: "{{ (total_port_count|default(0)|int + item.node_port_count|int)|int }}"
+  with_items:
+    - "{{ha_pairs}}"
+  tags:
+    - ontap_delete_default_broadcast_domain
+    
+# Delete the Default broadcast domains with node ports (This does not include Cluster ports and management ports)
+- name: Delete Default-N automatically created broadcast domains
+  netapp.ontap.na_ontap_broadcast_domain:
+    state: absent
+    name: "{{item}}"
+    ipspace: Default
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_sequence: start=1 end="{{ total_port_count|int*2 }}" format=Default-%01x
+  tags:
+    - ontap_delete_default_broadcast_domain
+
+# Configure IPspace for the OpenShift tenant
+- name: Create an IPspace for the OpenShift tenant
+  netapp.ontap.na_ontap_ipspace:
+    state: present
+    name: "{{tenant_specs.ipspace}}"
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    use_rest: always
+    https: true
+    validate_certs: false
+  tags:
+    - ontap_create_ipspace
+
+# Create Management Broadcast Domain
+- name: Create OCP Management Broadcast Domain
+  netapp.ontap.na_ontap_broadcast_domain:
+    state: present
+    broadcast_domain: "{{item.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    mtu: 1500
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{ib_mgmt_vlan_list}}"
+  tags:
+    - ontap_mgmt_broadcast_domain
+
+# Create iSCSI broadcast domain ports with Jumbo frames
+- name: Create iSCSI broadcast domain ports with Jumbo frames
+  netapp.ontap.na_ontap_broadcast_domain:
+    state: present
+    broadcast_domain: "{{item.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    mtu: 9000
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{storage_vlan_list}}"
+  when:
+    - "('iscsi' in tenant_specs.allowed_protocols)"
+    - item.storage_protocol == "iSCSI"
+  tags:
+    - ontap_iscsi_broadcast_domains
+
+# Create NFS broadcast domain ports with Jumbo frames
+- name: Create NFS broadcast domain ports with Jumbo frames
+  netapp.ontap.na_ontap_broadcast_domain:
+    state: present
+    broadcast_domain: "{{item.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    mtu: 9000
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{storage_vlan_list}}"
+  when:
+    - "('nfs' in tenant_specs.allowed_protocols)"
+    - item.storage_protocol == "NFS"
+  tags:
+    - ontap_nfs_broadcast_domain
+
+# Create NVMe/TCP broadcast domain ports with Jumbo frames
+- name: Create NVMe/TCP broadcast domain ports with Jumbo frames
+  netapp.ontap.na_ontap_broadcast_domain:
+    state: present
+    broadcast_domain: "{{item.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    mtu: 9000
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{storage_vlan_list}}"
+  when:
+    - "('iscsi' in tenant_specs.allowed_protocols)"
+    - "('nvme' in tenant_specs.allowed_protocols)"
+    - item.storage_protocol == "NVMe"
+  tags:
+    - ontap_nvme_tcp_broadcast_domains
+
+# Create management vlan interface and add it to the management broadcast domain
+- name: Create the OpenShift management VLAN and add it to the OpenShift management broadcast domain
+  netapp.ontap.na_ontap_net_vlan:
+    state: "{{item.1.state}}"
+    parent_interface: "{{item.2}}"
+    vlanid: "{{item.1.id}}"
+    node: "{{item.0.node_name}}"
+    broadcast_domain: "{{item.1.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    enabled: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_nested:
+    - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
+    - "{{ib_mgmt_vlan_list}}"
+    - "{{ifgrp_name}}"
+  when: item.1.state == "present"
+  tags:
+    - ontap_mgmt_vlan_interface
+
+# Create iSCSI vlans and add them to the correponding broadcast domains
+- name: Create the OpenShift iSCSI VLANs and add them to the OpenShift iSCSI broadcast domains
+  netapp.ontap.na_ontap_net_vlan:
+    state: "{{item.1.state}}"
+    parent_interface: "{{item.2}}"
+    vlanid: "{{item.1.id}}"
+    node: "{{item.0.node_name}}"
+    broadcast_domain: "{{item.1.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    enabled: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_nested:
+    - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
+    - "{{storage_vlan_list}}"
+    - "{{ifgrp_name}}"
+  when:
+    - "('iscsi' in tenant_specs.allowed_protocols)"
+    - item.1.storage_protocol == "iSCSI"
+    - item.1.state == "present"
+  tags:
+    - ontap_iscsi_vlan_interface
+
+# Create NFS vlans and add them to the correponding broadcast domains
+- name: Create the OpenShift NFS VLANs and add them to the OpenShift NFS broadcast domains
+  netapp.ontap.na_ontap_net_vlan:
+    state: "{{item.1.state}}"
+    parent_interface: "{{item.2}}"
+    vlanid: "{{item.1.id}}"
+    node: "{{item.0.node_name}}"
+    broadcast_domain: "{{item.1.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    enabled: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_nested:
+    - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
+    - "{{storage_vlan_list}}"
+    - "{{ifgrp_name}}"
+  when:
+    - "('nfs' in tenant_specs.allowed_protocols)"
+    - item.1.storage_protocol == "NFS"
+    - item.1.state == "present"
+  tags:
+    - ontap_nfs_vlan_interface
+
+# Create NVMe/TCP vlans and add them to the correponding broadcast domains
+- name: Create the OpenShift NVMe-TCP VLANs and add them to the OpenShift NVMe-TCP broadcast domains
+  netapp.ontap.na_ontap_net_vlan:
+    state: "{{item.1.state}}"
+    parent_interface: "{{item.2}}"
+    vlanid: "{{item.1.id}}"
+    node: "{{item.0.node_name}}"
+    broadcast_domain: "{{item.1.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    enabled: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_nested:
+    - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
+    - "{{storage_vlan_list}}"
+    - "{{ifgrp_name}}"
+  when:
+    - "('iscsi' in tenant_specs.allowed_protocols)"
+    - "('nvme' in tenant_specs.allowed_protocols)"
+    - item.1.storage_protocol == "NVMe"
+    - item.1.state == "present"
+  tags:
+    - ontap_nvme_tcp_vlan_interface

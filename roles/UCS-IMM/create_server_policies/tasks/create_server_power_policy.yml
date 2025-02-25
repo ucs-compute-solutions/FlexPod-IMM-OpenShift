@@ -1,0 +1,29 @@
+---
+- name: "Configure Server Power Policy"
+  vars:
+    api_info: &api_info
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+    <<: *api_info
+    resource_path: /power/Policies
+    query_params:
+       $filter: "Name eq '{{ server_power_policy_name }}'"
+    api_body: {
+          "Name": "{{ server_power_policy_name }}",
+          "Description": "{{ server_power_policy_description }}",
+
+          "Organization": {
+             "Moid": "{{ intersight_org.api_response.Moid }}"
+           },
+          Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+            "PowerPriority": "Low",
+            "PowerProfiling": "Enabled",
+            "PowerRestoreState": "AlwaysOff",
+            "ProcessorPackagePowerLimit": "Default"
+        }
+  register: server_power_policy

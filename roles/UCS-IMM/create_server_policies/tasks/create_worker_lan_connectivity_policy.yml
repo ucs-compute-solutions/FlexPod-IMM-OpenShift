@@ -1,0 +1,147 @@
+---
+
+- name: "Configure LAN Connectivity Policy for Worker Nodes"
+  vars:
+    api_info: &api_info_worker
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  block:
+  - name: "LAN Connectivity Policy for Worker Nodes"
+    cisco.intersight.intersight_rest_api:
+          <<: *api_info_worker
+          resource_path: /vnic/LanConnectivityPolicies
+          query_params:
+             $filter: "Name eq '{{ name_of_worker_lan_connectivity_policy }}'"
+          api_body: {
+              "Name": "{{ name_of_worker_lan_connectivity_policy }}",
+              "Description": "{{ description_of_worker_lan_connectivity_policy }}",
+              "TargetPlatform": "FIAttached",
+              "AzureQosEnabled": false,
+              "IqnAllocationType": "None",
+              "PlacementMode": "custom",
+              "IqnPool": "",
+              "StaticIqnName": "",
+
+              "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+               },
+              Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}] 
+           }
+    register: worker_lan_connectivity_policy
+
+  - name: "Add {{ name_of_worker_vnic_1 }} to Worker LAN Connectivity Policy"
+    cisco.intersight.intersight_rest_api:
+        <<: *api_info_worker
+        resource_path: /bulk/MoCloners
+        query_params:
+           $filter: "Name eq '{{ name_of_worker_vnic_1 }}'"
+        api_body: {
+             "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+             },
+             "Sources": [{
+               "Moid": "{{ baremetal_vnic_template.api_response.Moid }}",
+               "ObjectType": "vnic.VnicTemplate"
+             }],
+             "Targets": [{
+               "LanConnectivityPolicy": "{{ worker_lan_connectivity_policy.api_response.Moid }}",
+               "MacAddressType": "POOL",
+               "Name": "{{ name_of_worker_vnic_1 }}",
+               "ObjectType": "vnic.EthIf",
+               "Order": 0,
+               "Placement": {
+                  "AutoPciLink": true,
+                  "AutoSlotId": true
+               },
+             }],
+             "WorkflowNameSuffix": "Add vNIC from a Template"
+         }
+
+  - name: "Add {{ name_of_worker_vnic_2 }} to Worker LAN Connectivity Policy"
+    cisco.intersight.intersight_rest_api:
+        <<: *api_info_worker
+        resource_path: /bulk/MoCloners
+        query_params:
+           $filter: "Name eq '{{ name_of_worker_vnic_2 }}'"
+        api_body: {
+             "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+             },
+             "Sources": [{
+               "Moid": "{{ iscsi_nvme_a_vnic_template.api_response.Moid }}",
+               "ObjectType": "vnic.VnicTemplate"
+             }],
+             "Targets": [{
+               "LanConnectivityPolicy": "{{ worker_lan_connectivity_policy.api_response.Moid }}",
+               "MacAddressType": "POOL",
+               "Name": "{{ name_of_worker_vnic_2 }}",
+               "ObjectType": "vnic.EthIf",
+               "Order": 1,
+               "Placement": {
+                  "AutoPciLink": true,
+                  "AutoSlotId": true
+               },
+             }],
+             "WorkflowNameSuffix": "Add vNIC from a Template"
+         }
+
+  - name: "Add {{ name_of_worker_vnic_3 }} to Worker LAN Connectivity Policy"
+    cisco.intersight.intersight_rest_api:
+        <<: *api_info_worker
+        resource_path: /bulk/MoCloners
+        query_params:
+           $filter: "Name eq '{{ name_of_worker_vnic_3 }}'"
+        api_body: {
+             "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+             },
+             "Sources": [{
+               "Moid": "{{ iscsi_nvme_b_vnic_template.api_response.Moid }}",
+               "ObjectType": "vnic.VnicTemplate"
+             }],
+             "Targets": [{
+               "LanConnectivityPolicy": "{{ worker_lan_connectivity_policy.api_response.Moid }}",
+               "MacAddressType": "POOL",
+               "Name": "{{ name_of_worker_vnic_3 }}",
+               "ObjectType": "vnic.EthIf",
+               "Order": 2,
+               "Placement": {
+                  "AutoPciLink": true,
+                  "AutoSlotId": true
+               },
+             }],
+             "WorkflowNameSuffix": "Add vNIC from a Template"
+         }
+
+  - name: "Add {{ name_of_worker_vnic_4 }} to Worker LAN Connectivity Policy"
+    cisco.intersight.intersight_rest_api:
+        <<: *api_info_worker
+        resource_path: /bulk/MoCloners
+        query_params:
+           $filter: "Name eq '{{ name_of_worker_vnic_4 }}'"
+        api_body: {
+             "Organization": {
+                 "Moid": "{{ intersight_org.api_response.Moid }}"
+             },
+             "Sources": [{
+               "Moid": "{{ nfs_vnic_template.api_response.Moid }}",
+               "ObjectType": "vnic.VnicTemplate"
+             }],
+             "Targets": [{
+               "LanConnectivityPolicy": "{{ worker_lan_connectivity_policy.api_response.Moid }}",
+               "MacAddressType": "POOL",
+               "Name": "{{ name_of_worker_vnic_4 }}",
+               "ObjectType": "vnic.EthIf",
+               "Order": 3,
+               "Placement": {
+                  "AutoPciLink": true,
+                  "AutoSlotId": true
+               },
+             }],
+             "WorkflowNameSuffix": "Add vNIC from a Template"
+         }
+    when: configure_nfs == 'true'

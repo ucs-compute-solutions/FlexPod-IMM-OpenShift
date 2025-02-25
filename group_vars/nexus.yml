@@ -1,0 +1,72 @@
+---
+ansible_connection: network_cli
+ansible_network_os: nxos
+#
+provider_ssh:
+  host: "{{ ansible_host }}"
+  username: "{{ ansible_username }}"
+  password: "{{ ansible_password }}"
+  transport: network_cli
+#
+backup_dir: "~/"
+#
+# OpenShift Tenant Name for NTP Distribution VRF
+openshift_vrf_name: "AA02-OCP"
+#
+ntp_distribution_vlan: "{{ baremetal_vlan_id }}" # VLAN (OCP-BareMetal-MGMT) where NTP distribution interfaces will be placed.
+ntp_distribution_nm_cidr: "/24"
+ntp_distribution_gw: '10.102.2.254' # Default gateway for IB-MGMT NTP distribution interfaces - not used if Nexus NTP distribution not used.
+#
+# In this lab setup, port-channel numbers are keyed off of port numbers. For example, if port Eth1/11 is the first port
+# in a port-channel, the port-channel will be port-channel111. This does not apply to the vPC Peer Link.
+uplink_PC:
+  - interface: "port-channel127"
+    # id must be same as port-channel number
+    id: "127"
+    speed: "auto"
+    duplex: "auto"
+    description: "AA02-93180-Uplink"
+#
+peerlink_PC:
+  - interface: "port-channel10"
+    # id must be same as port-channel number
+    id: "10"
+    speed: "auto"
+    duplex: "auto"
+    description: "vPC Peer Link"
+#
+FI_A_PC:
+  - interface: "port-channel19"
+    # id must be same as port-channel number
+    id: "19"
+    speed: "auto"
+    duplex: "auto"
+    description: "AA02-S9108-A"
+#
+FI_B_PC:
+  - interface: "port-channel110"
+    # id must be same as port-channel number
+    id: "110"
+    speed: "auto"
+    duplex: "auto"
+    description: "AA02-S9108-B"
+#
+storage_A_PC:
+  - interface: "port-channel11"
+    # id must be same as port-channel number
+    id: "11"
+    speed: "auto"
+    duplex: "auto"
+    description: "AA02-C800-01"
+#
+storage_B_PC:
+  - interface: "port-channel12"
+    # id must be same as port-channel number
+    id: "12"
+    speed: "auto"
+    duplex: "auto"
+    description: "AA02-C800-02"
+#
+all_port_channels: "{{ peerlink_PC + uplink_PC + FI_A_PC + FI_B_PC + storage_A_PC + storage_B_PC }}"
+#
+
