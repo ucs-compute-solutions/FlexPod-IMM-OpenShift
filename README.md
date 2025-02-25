@@ -19,7 +19,7 @@ To execute various ansible playbooks, a linux based system will need to be setup
 
 # How to execute these playbooks?
 
-![block-diagram](https://github.com/ucs-compute-solutions/FlexPod-IMM-VMware/tree/main/ReadmePics/Ansible-Order.jpg)
+![block-diagram](https://github.com/ucs-compute-solutions/FlexPod-IMM-OpenShift/blob/main/ReadmePics/Ansible-Order.jpg)
 
 Because a number of manual tasks need to be executed between running the Ansible playbooks, the CVD document should be used as a guide for running the playbooks. Commentary is included in the variable files to guide filling in those values.
 
