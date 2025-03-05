@@ -144,4 +144,4 @@
              }],
              "WorkflowNameSuffix": "Add vNIC from a Template"
          }
-    when: configure_nfs == 'true'
+    when: (configure_nfs == 'true') or (configure_s3 == 'true')

@@ -7,7 +7,7 @@
     - "{{ha_pairs}}"
   tags:
     - ontap_delete_default_broadcast_domain
-    
+
 # Delete the Default broadcast domains with node ports (This does not include Cluster ports and management ports)
 - name: Delete Default-N automatically created broadcast domains
   netapp.ontap.na_ontap_broadcast_domain:
@@ -115,6 +115,26 @@
   tags:
     - ontap_nvme_tcp_broadcast_domains
 
+# Create S3 broadcast domain ports with Jumbo frames
+- name: Create S3 broadcast domain ports with Jumbo frames
+  netapp.ontap.na_ontap_broadcast_domain:
+    state: present
+    broadcast_domain: "{{item.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    mtu: 9000
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{storage_vlan_list}}"
+  when:
+    - "('s3' in tenant_specs.allowed_protocols)"
+    - item.storage_protocol == "S3"
+  tags:
+    - ontap_s3_broadcast_domain
+
 # Create management vlan interface and add it to the management broadcast domain
 - name: Create the OpenShift management VLAN and add it to the OpenShift management broadcast domain
   netapp.ontap.na_ontap_net_vlan:
@@ -216,3 +236,29 @@
     - item.1.state == "present"
   tags:
     - ontap_nvme_tcp_vlan_interface
+
+# Create S3 vlans and add them to the correponding broadcast domains
+- name: Create the OpenShift S3 VLANs and add them to the OpenShift S3 broadcast domains
+  netapp.ontap.na_ontap_net_vlan:
+    state: "{{item.1.state}}"
+    parent_interface: "{{item.2}}"
+    vlanid: "{{item.1.id}}"
+    node: "{{item.0.node_name}}"
+    broadcast_domain: "{{item.1.name}}"
+    ipspace: "{{tenant_specs.ipspace}}"
+    enabled: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_nested:
+    - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
+    - "{{storage_vlan_list}}"
+    - "{{ifgrp_name}}"
+  when:
+    - "('s3' in tenant_specs.allowed_protocols)"
+    - item.1.storage_protocol == "S3"
+    - item.1.state == "present"
+  tags:
+    - ontap_s3_vlan_interface

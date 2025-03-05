@@ -247,6 +247,126 @@
   tags:
     - ontap_enable_nvme_service
 
+# Get the SVM certificate information
+- name: Get the SVM certificate information
+  netapp.ontap.na_ontap_rest_info:
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+    use_rest: always
+    use_python_keys: true
+    gather_subset:
+      - security/certificates
+    parameters:
+      svm.name: "{{ tenant_specs.svm_name }}"
+    fields:
+      - 'name'
+  register: svm_cert
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_enable_s3_service
+
+# Create and enable S3 service
+- name: Create and enable S3 service
+  netapp.ontap.na_ontap_s3_services:
+    state: present
+    enabled: true
+    name: "{{item.s3_service}}.{{item.dns_domain_svm}}"
+    is_https_enabled: false
+    is_http_enabled: true
+    vserver: "{{item.svm_name}}"
+    certificate_name: "{{ svm_cert.ontap_info.security_certificates.records[0].name }}"
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{ tenant_specs }}"
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_enable_s3_service
+
+# Create S3 user
+- name: Create S3 user
+  netapp.ontap.na_ontap_s3_users:
+    state: present
+    name: "{{tenant_specs.s3_user}}"
+    vserver: "{{tenant_specs.svm_name}}"
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  register: result
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_create_s3_user
+
+# Print Access Key & Secret Key
+- name: Print Access Key & Secret Key
+  ansible.builtin.debug:
+    msg:
+      - access_key: "{{result.access_key}}"
+      - secret_key: "{{result.secret_key}}"
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_create_s3_user
+
+# Create S3 group & add S3 user to it
+- name: Create S3 group and add S3 user to this group
+  netapp.ontap.na_ontap_s3_groups:
+    state: present
+    name: "{{tenant_specs.s3_group}}"
+    users:
+      - name: "{{tenant_specs.s3_user}}"
+    policies:
+      - name: FullAccess
+    vserver: "{{tenant_specs.svm_name}}"
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_s3_group_config
+
+# Create S3 bucket
+- name: Create S3 bucket
+  netapp.ontap.na_ontap_s3_buckets:
+    state: present
+    name: "{{item.name}}"
+    size: "{{item.size}}"
+    type: s3
+    vserver: "{{tenant_specs.svm_name}}"
+    policy:
+      statements:
+        - sid: FullAccessToS3User
+          resources:
+            - "{{item.name}}"
+            - "{{item.name}}/*"
+          actions:
+            - GetObject
+            - PutObject
+            - DeleteObject
+            - ListBucket
+          effect: allow
+          principals: 
+            - "group/{{tenant_specs.s3_group}}"
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_items:
+    - "{{tenant_specs.s3_bucket_specs}}"
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_s3_bucket_config
+
 # Set the password for vsadmin first. Account cannot be unlocked without password
 - name: Set a password for the SVM vsadmin user
   netapp.ontap.na_ontap_user:

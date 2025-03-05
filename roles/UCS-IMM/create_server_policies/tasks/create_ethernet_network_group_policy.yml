@@ -173,3 +173,34 @@
       }
   register: nfs_network_group_policy
   when: configure_nfs == 'true'
+
+- name: "Configure Ethernet Network Group Policy for NFS and S3"
+  vars:
+    api_info: &api_info_nfs_s3
+      api_private_key: "{{ api_private_key }}"
+      api_key_id: "{{ api_key_id }}"
+      api_uri: "{{ api_uri | default(omit) }}"
+      validate_certs: "{{ validate_certs | default(omit) }}"
+      state: "{{ state | default(omit) }}"
+
+  cisco.intersight.intersight_rest_api:
+    <<: *api_info_nfs_s3
+    resource_path: /fabric/EthNetworkGroupPolicies
+    query_params:
+       $filter: "Name eq '{{ name_of_network_group_policy_for_nfs}}'"
+    api_body: {
+      "Name": "{{ name_of_network_group_policy_for_nfs }}",
+      "Description": "{{ description_of_network_group_policy_for_nfs }}",
+
+      "Organization": {
+         "Moid": "{{ intersight_org.api_response.Moid }}"
+       },
+      Tags: [{Key: "configmode", Value: "ansible"},{Key: "prefix", Value: "{{ prefix }}"}],
+      "VlanSettings": {
+         "NativeVlan": "{{ nfs_vlan_id }}",
+         "AllowedVlans": "{{ nfs_vlan_id }},{{ s3_vlan_id }}"
+         }
+      }
+  when: (configure_nfs == 'true') and (configure_s3 == 'true')
+
+

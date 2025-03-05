@@ -17,6 +17,7 @@ ha_pairs:
       data_aggregates:
         - {aggr_name: AA02_C800_01_SSD_CAP_1}
       nfs_lifs: {name: nfs-lif-01, address: 192.168.52.51, netmask: 255.255.255.0}  #Fill out this value only if nfs will be mentioned under allowed_protocols in tenant_specs
+      s3_lifs: {name: s3-lif-01, address: 192.168.82.51, netmask: 255.255.255.0}  #Fill out this value only if s3 will be mentioned under allowed_protocols in tenant_specs
       iscsi_lifs:  #Fill out this value only if iscsi will be mentioned under allowed_protocols in tenant_specs. Provide one iSCSI LIF per iSCSI VLAN
         - {name: iscsi-lif-01a, address: 192.168.12.51, netmask: 255.255.255.0, fabric: A}  #Do not change the fabric ID
         - {name: iscsi-lif-01b, address: 192.168.22.51, netmask: 255.255.255.0, fabric: B}  #Do not change the fabric ID
@@ -27,6 +28,7 @@ ha_pairs:
       data_aggregates:
         - {aggr_name: AA02_C800_02_SSD_CAP_1}
       nfs_lifs: {name: nfs-lif-02, address: 192.168.52.52, netmask: 255.255.255.0}  #Fill out this value only if nfs will be mentioned under allowed_protocols in tenant_specs
+      s3_lifs: {name: s3-lif-02, address: 192.168.82.52, netmask: 255.255.255.0}  #Fill out this value only if s3 will be mentioned under allowed_protocols in tenant_specs
       iscsi_lifs:  #Fill out this value only if iscsi will be mentioned under allowed_protocols in tenant_specs. Provide one iSCSI LIF per iSCSI VLAN
         - {name: iscsi-lif-02a, address: 192.168.12.52, netmask: 255.255.255.0, fabric: A}  #Do not change the fabric ID
         - {name: iscsi-lif-02b, address: 192.168.22.52, netmask: 255.255.255.0, fabric: B}  #Do not change the fabric ID
@@ -41,12 +43,20 @@ ha_pairs:
 tenant_specs:
   ipspace: "AA02-OCP"  #IPspace creation
   svm_name: "AA02-OCP-SVM"
-  allowed_protocols:  #Provide the values in lower case only, supported options for this solution are nfs, iscsi, and nvme
+  allowed_protocols:  #Provide the values in lower case only, supported options for this solution are nfs, iscsi, nvme, and s3
     - nfs             #For NVMe/TCP config, use nvme and iscsi
     - iscsi
     - nvme
+    - s3
   client_match: 192.168.52.0/24
   data_protocol: nfs
+  s3_service: s3-server     #Name of the S3 service
+  s3_user: s3-user          #Name of the S3 user
+  s3_group: s3-group        #Name of the S3 group
+  s3_service_policy: s3-policy       #Name of the S3 service policy. This will be used for creating S3 data LIFs
+  s3_bucket_specs:          #S3 bucket specifications
+    - {name: s3-buc1, size: 214748364800}      #Provide S3 bucket size in bytes
+    - {name: s3-buc2, size: 107374182400}
   dns_server_svm:
     - "{{ dns_servers[0].ip_address }}"
     - "{{ dns_servers[1].ip_address }}"

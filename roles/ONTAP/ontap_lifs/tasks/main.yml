@@ -159,6 +159,55 @@
   tags:
     - ontap_svm_mgmt_lif
 
+# Create ONTAP S3 service data policy [Required for S3 data LIFs]
+- name: Create ONTAP S3 service data policy
+  netapp.ontap.na_ontap_service_policy:
+    state: present
+    name: "{{tenant_specs.s3_service_policy}}"
+    vserver: "{{tenant_specs.svm_name}}"
+    scope: svm
+    services:
+      - data_core
+      - data_s3_server
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  when: "('s3' in tenant_specs.allowed_protocols)"
+  tags:
+    - ontap_s3_service_policy
+    - ontap_s3_lifs
+
+# Create LIFs for S3 access
+- name: Create S3 data LIFs
+  netapp.ontap.na_ontap_interface:
+    state: present
+    vserver: "{{tenant_specs.svm_name}}"
+    service_policy: "{{tenant_specs.s3_service_policy}}"
+    home_node: "{{item.0.node_name}}"
+    home_port: "{{item.2}}-{{item.1.id}}"
+    address: "{{item.0.s3_lifs.address}}"
+    netmask: "{{item.0.s3_lifs.netmask}}"
+    interface_name: "{{item.0.s3_lifs.name}}"
+    admin_status: up
+    failover_policy: broadcast-domain-wide
+    is_auto_revert: true
+    hostname: "{{inventory_hostname}}"
+    username: "{{username}}"
+    password: "{{password}}"
+    https: true
+    validate_certs: false
+  with_nested:
+    - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
+    - "{{storage_vlan_list}}"
+    - "{{ifgrp_name}}"
+  when:
+    - "('s3' in tenant_specs.allowed_protocols)"
+    - item.1.storage_protocol == "S3"
+  tags:
+    - ontap_s3_lifs
+
 # Create a default route in OCP SVM
 - name: Create a default route in OCP SVM
   netapp.ontap.na_ontap_net_routes:

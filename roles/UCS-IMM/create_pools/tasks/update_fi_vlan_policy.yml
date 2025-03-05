@@ -98,6 +98,33 @@
       }
     when: configure_nfs == 'true'
 
+  - name: "Add {{ s3_vlan_name }} to FI VLAN Policy"
+    cisco.intersight.intersight_rest_api:
+        <<: *api_fi_vlan
+        resource_path: /bulk/Requests
+        query_params:
+           $filter: "Name eq '{{ s3_vlan_name }}_{{ s3_vlan_id }}'"
+        api_body: {
+          "Requests": [
+		        {
+			        "Body": {
+				         "AutoAllowOnUplinks": true,
+				         "EthNetworkPolicy": "{{ fi_vlan_policy.api_response.Moid }}",
+				         "IsNative": false,
+				         "MulticastPolicy": "{{ multicast_policy.api_response.Moid }}",
+				         "Name": '{{ s3_vlan_name }}_{{ s3_vlan_id }}',
+				         "PrimaryVlanId": 0,
+				         "SharingType": "None",
+                 "VlanId": "{{ s3_vlan_id }}"
+              },
+			      "ObjectType": "bulk.RestSubRequest"
+		        }
+	        ],
+	        "Uri": "/v1/fabric/Vlans",
+	        "Verb": "POST"
+      }
+    when: configure_nfs == 'true'
+
   - name: "Add {{ iscsiA_vlan_name }} to FI VLAN Policy"
     cisco.intersight.intersight_rest_api:
         <<: *api_fi_vlan
