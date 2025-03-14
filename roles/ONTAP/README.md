@@ -19,26 +19,19 @@ As the automation solution is specifically build for the above mentioned CVD, th
 	Storage Operating System: ONTAP 9.16.1
 	Storage Protocols: NFS, iSCSI, NVMe/TCP, and S3
 
-### Prerequisite
+### Prerequisites
 
 1. FlexPod Base setup should be in place using the FlexPod Base CVD "[FlexPod Datacenter Base Configuration using IaC with Cisco IMM and NetApp ONTAP Deployment Guide](https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_base_imm_m7_iac.html)"
 
-2. The user should have an Ansible Control machine that has network reachability to the ONTAP storage system and internet access to pull this repository from GitHub.
-Refer https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html for guidance on setting up an Ansible Control machine.
-
-3. The Ansible control machine should have the NetApp dependency libraries and collections installed
-
-```
-pip3 install netapp-lib
-ansible-galaxy collection install netapp.ontap
-```
+2. Refer to the FlexPod Base GitHub repository for automated deployment of FlexPod Base via Ansible:
+   https://github.com/ucs-compute-solutions/FlexPod-Base-IMM
 
 ### Getting Started
 
 1. From the Ansible Control machine Download a ZIP version of this repository or clone it using the below command:
 	
 ```
-git clone https://github.com/ucs-compute-solutions/FlexPod-IMM-4.2.2.git
+git clone https://github.com/ucs-compute-solutions/FlexPod-IMM-OpenShift.git
 ```
 
 2. There is one variable file under the vars folder 'ontap_main.yml' for setup of ONTAP that need to be filled out with environment specific parameters prior to executing the playbook.
@@ -51,13 +44,13 @@ NOTE: Sample values are pre-populated against some variables in order to provide
 
 4. Update the credentials for the ONTAP Cluster
 
-Navigate to the 'ontap' file within the 'group_vars' directory and update it with the admin credentials for the ONTAP cluster 
+Navigate to the 'ontap' file within the 'group_vars' directory and update it with the username info. Open the 'secrets.yml' file under 'group_vars' directory and update the password for the ONTAP cluster.
 
 Example -
 
 	# Credentials for connecting to the ONTAP Cluster
 	username: admin
-	password: password
+	password: "{{ password_1 }}"
 
 5. Update the Inventory file
 
@@ -71,19 +64,12 @@ Example -
 
 6. Executing the Playbook
 
-A playbook by name 'Setup_ONTAP.yml' is available at the root of this repository. It calls all the required roles to complete the setup of the ONTAP storage system.
-
-The ONTAP setup is split into three sections, use the tags - ontap_config_part_1, ontap_config_part_2, and ontap_config_part_3 to execute parts of the playbook at the appropriate stage of setup.
+A playbook by name 'Setup_ONTAP.yml' is available at the root of this repository. It calls all the required roles to complete the setup of the ONTAP storage system for the FlexPod OpenShift tenant.
 
 Execute the playbook from the Ansible Control machine as an admin/ root user using the following command:
 
 
-	After setup of Cisco Nexus switches	-	ansible-playbook -i hosts Setup_ONTAP.yml -t ontap_config_part_1
-
-	After setup of Cisco UCS		-	ansible-playbook -i hosts Setup_ONTAP.yml -t ontap_config_part_2
-
-	After setup of VMware ESXi		-	ansible-playbook -i hosts Setup_ONTAP.yml -t ontap_config_part_3
-	
+	After setup of Cisco Nexus switches	-	ansible-playbook -i inventory Setup_ONTAP.yml -t ontap_config
 
 If you would like to run a part of the deployment, you may use the appropriate tag that accompanies each task in the role and run the playbook in the below fashion -
 
