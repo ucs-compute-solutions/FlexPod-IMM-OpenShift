@@ -1,28 +1,23 @@
-### Automated ONTAP storage deployment using Ansible for End-to-End 100G FlexPod Datacenter with Cisco UCS 4.2(2) in Intersight Managed Mode, VMware vSphere 7.0 U3, and NetApp ONTAP 9.11.1
+### Automated ONTAP storage deployment using Ansible for FlexPod Datacenter with Red Hat OpenShift on Bare Metal
  
-This repository contains Ansible roles and playbooks for an end-to-end ONTAP storage deployment for VMware vSphere 7.0 U3 in a FlexPod Datacenter.
+This repository contains Ansible roles and playbooks for an end-to-end ONTAP storage deployment for FlexPod OpenShift tenant.
 
 The ONTAP deployment automation is based on the following roles:
 
-	ontap_primary_setup
 	ontap_network
 	ontap_svm
 	ontap_volumes
 	ontap_lifs
-	ontap_luns
-	ontap_nvme
 	ontap_finalize_setup
-	esxi_datastores
 
-These roles are developed as per the best practices prescribed in the Cisco Validated Design (CVD) "[FlexPod Datacenter with End-to-End 100G, Cisco Intersight Managed Mode, VMware 7U3, and NetApp ONTAP 9.11](https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_ucs_xseries_e2e_ontap_manual_deploy.html)".
+These roles are developed as per the best practices prescribed in the Cisco Validated Design (CVD) "[FlexPod Datacenter with Red Hat OpenShift Bare Metal Manual Configuration with Cisco UCS X-Series Direct](https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_rh_ocp_bm_xseries.html)".
 
 ### Environment Validated
 
 As the automation solution is specifically build for the above mentioned CVD, the current roles and playbooks support the following components:
 
-	Storage Operating System: ONTAP 9.11.1
-	Storage Protocols: iSCSI, NFS, FCP, and NVMe
-	VMware vSphere: 7.0 U3
+	Storage Operating System: ONTAP 9.16.1
+	Storage Protocols: NFS, iSCSI, NVMe/TCP, and S3
 
 ### Prerequisite
 
