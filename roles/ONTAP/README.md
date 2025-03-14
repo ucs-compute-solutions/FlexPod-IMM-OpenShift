@@ -70,6 +70,7 @@ Execute the playbook from the Ansible Control machine as an admin/ root user usi
 
 
 	After setup of Cisco Nexus switches	-	ansible-playbook -i inventory Setup_ONTAP.yml -t ontap_config
+ 
 
 If you would like to run a part of the deployment, you may use the appropriate tag that accompanies each task in the role and run the playbook in the below fashion -
 
