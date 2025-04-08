@@ -1,4 +1,4 @@
-
+[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/ucs-compute-solutions/FlexPod-IMM-OpenShift)
 # FlexPod Converged Infrastructure setup using Ansible for FlexPod Datacenter with Red Hat OpenShift on Bare Metal
 
 Note that the scripts in this repository have now been successfully tested with NetApp ONTAP 9.16.1, Cisco Nexus NXOS 10.4(4), and Cisco UCS 4.3(5).
