@@ -1,15 +1,14 @@
-# This is the top-level variable file that will be used for the FlexPod with OpenShift on BareMetal setup. 
+# This is the top-level variable file that will be used for the FlexPod with OpenShift on BareMetal setup.
 # Currently only M.2 Boot with all IP storage is supported. Notice that the configure_iscsi variable is set to true.
 # The first iteration of these scripts assumes that NFS, iSCSI, and NVMe-TCP are being configured.
 #
-# Setting the following variables to anything but 'true' ('false' is suggested when not using 'true'), will cause the 
+# Setting the following variables to anything but 'true' ('false' is suggested when not using 'true'), will cause the
 # protocol to not be configured.
 configure_iscsi: 'true'     # We are assuming that configure_iscsi is always true
 configure_nvme_tcp: 'true'  # Only set this to 'true' if configure_iscsi is set to 'true'
 
 configure_nfs: 'true'       # In FlexPod, nfs is always used unless you have an All SAN Array (ASA)
-configure_s3: 'true'        # For OpenShift AI. Only set this to 'true' if configure_nfs is set to 'true'
-#
+configure_s3: 'true'        # For OpenShift AI and Trident protect for VM snapshot and recovery. 
 use_nexus_ntp_distribution: 'true' # If not using Nexus NTP distribution, set this to 'false'.
 openshift_ntp_servers:   # Assigned NTP Addresses in the BareMetal/MGMT VLAN to be used by OpenShift hosts. If not using Nexus NTP distribution, set these still needed values to global NTP servers.
   - ip_address: "10.102.2.3"
@@ -33,16 +32,14 @@ baremetal_vlan_name: 'OCP-BareMetal-MGMT' # IN BAND BareMetal/Management VLAN
 baremetal_vlan_id: 1022
 nfs_vlan_name: 'OCP-NFS' # NFS Traffic between OpenShift and Storage (if needed)
 nfs_vlan_id: 3052
-iscsiA_vlan_name: 'OCP-iSCSI-A' # iSCSI-A VLAN 
+iscsiA_vlan_name: 'OCP-iSCSI-A' # iSCSI-A VLAN
 iscsiA_vlan_id: 3012
-iscsiB_vlan_name: 'OCP-iSCSI-B' # iSCSI-B VLAN 
+iscsiB_vlan_name: 'OCP-iSCSI-B' # iSCSI-B VLAN
 iscsiB_vlan_id: 3022
 nvme_tcpA_vlan_name: 'OCP-NVMe-TCP-A' # NVMe-TCP-A VLAN (if needed)
 nvme_tcpA_vlan_id: 3032
 nvme_tcpB_vlan_name: 'OCP-NVMe-TCP-B' # NVMe-TCP-B VLAN (if needed)
 nvme_tcpB_vlan_id: 3042
-s3_vlan_id: 3082
-s3_vlan_name: 'OCP-S3' # S3 VLAN for OpenShift AI
 #
 # lan_state should be set to 'present' to configure the objects
 # In future, this parameter will be used for deleting the configuration
@@ -94,11 +91,6 @@ storage_vlan_list:
     storage_protocol: NVMe
     fabric: B
     state: "{{lan_state}}"
-  - name: "{{ s3_vlan_name }}"
-    id: "{{ s3_vlan_id }}"
-    native: 'no'
-    storage_protocol: S3
-    state: "{{lan_state}}"
 
 # VLANs definitions below will be used to setup trunk ports on Nexus Switches
 # all_vlans_list: for vpc_peer_link and UCS FI trunk ports
@@ -106,9 +98,9 @@ storage_vlan_list:
 # Comment out or remove any VLANs that are not used (NFS, NVMe-TCP, or S3)
 # In future, these values will be auto-generated
 #
-all_vlans_list: "{{ baremetal_vlan_id }},{{ nfs_vlan_id }},{{ iscsiA_vlan_id }},{{ iscsiB_vlan_id }},{{ nvme_tcpA_vlan_id }},{{ nvme_tcpB_vlan_id }},{{ s3_vlan_id }}"
+all_vlans_list: "{{ baremetal_vlan_id }},{{ nfs_vlan_id }},{{ iscsiA_vlan_id }},{{ iscsiB_vlan_id }},{{ nvme_tcpA_vlan_id }},{{ nvme_tcpB_vlan_id }}"
 # storage_vlans_list: for storage uplink trunk ports
-storage_vlans_list: "{{ baremetal_vlan_id }},{{ nfs_vlan_id }},{{ iscsiA_vlan_id }},{{ iscsiB_vlan_id }},{{ nvme_tcpA_vlan_id }},{{ nvme_tcpB_vlan_id }},{{ s3_vlan_id }}"
+storage_vlans_list: "{{ baremetal_vlan_id }},{{ nfs_vlan_id }},{{ iscsiA_vlan_id }},{{ iscsiB_vlan_id }},{{ nvme_tcpA_vlan_id }},{{ nvme_tcpB_vlan_id }}"
 # mgmt_vlans_list: for uplink/management switch trunk port
 mgmt_vlans_list: "{{ baremetal_vlan_id }}"
 #

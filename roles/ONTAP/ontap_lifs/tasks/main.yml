@@ -200,11 +200,9 @@
     validate_certs: false
   with_nested:
     - "{{ ha_pairs | map(attribute='node_specs') | flatten }}"
-    - "{{storage_vlan_list}}"
+    - "{{ ib_mgmt_vlan_list }}"
     - "{{ifgrp_name}}"
-  when:
-    - "('s3' in tenant_specs.allowed_protocols)"
-    - item.1.storage_protocol == "S3"
+  when: "('s3' in tenant_specs.allowed_protocols)"
   tags:
     - ontap_s3_lifs
 

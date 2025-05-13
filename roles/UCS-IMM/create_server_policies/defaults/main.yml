@@ -74,7 +74,7 @@ description_of_network_group_policy_for_iscsi_nvme_tcp_a       : "VLAN details o
 description_of_network_group_policy_for_iscsi_nvme_tcp_b       : "VLAN details of vNIC assigned for OCP iSCSI-B VLAN and optional NVMe-TCP-B VLAN; iSCSI-B VLAN set as Native VLAN"
 
 # Ethernet Network Group Policy - VLAN details of OCP NFS and S3 vNIC Interface
-description_of_network_group_policy_for_nfs        : "VLAN details of vNIC assigned for OCP NFS and S3 VLANs; NFS VLAN set as Native VLAN unless S3 only"
+description_of_network_group_policy_for_nfs        : "VLAN details of vNIC assigned for OCP NFS VLAN; NFS VLAN set as Native VLAN"
 
 # vNIC Template for BareMetal-MGMT
 description_of_vnic_template_baremetal      : "vNIC Template for Node BareMetal-MGMT vNIC; BareMetal-MGMT VLAN set as Native VLAN"

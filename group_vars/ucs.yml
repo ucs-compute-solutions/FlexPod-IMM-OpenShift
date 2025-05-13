@@ -133,8 +133,8 @@ name_of_network_group_policy_for_iscsi_nvme_tcp_a          : "{{ prefix }}-iSCSI
 # Ethernet Network Group Policy - VLAN details of vNIC assigned for OCP iSCSI-B and optional NVMe-TCP-B VLANs
 name_of_network_group_policy_for_iscsi_nvme_tcp_b          : "{{ prefix }}-iSCSI-NVMe-TCP-B-NetGrp-Policy"
 
-# Ethernet Network Group Policy - VLAN details of OCP NFS and S3 vNIC Interface
-name_of_network_group_policy_for_nfs                : "{{ prefix }}-NFS-S3-NetGrp-Policy"
+# Ethernet Network Group Policy - VLAN details of OCP NFS vNIC Interface
+name_of_network_group_policy_for_nfs                : "{{ prefix }}-NFS-NetGrp-Policy"
 
 # vNIC Template for BareMetal-MGMT
 name_of_vnic_template_baremetal      : "{{ prefix }}-BareMetal-MGMT-vNIC"

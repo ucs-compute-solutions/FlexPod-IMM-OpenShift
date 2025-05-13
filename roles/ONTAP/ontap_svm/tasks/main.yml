@@ -289,7 +289,7 @@
   tags:
     - ontap_enable_s3_service
 
-# Create S3 user
+# Create an ONTAP S3 user
 - name: Create S3 user
   netapp.ontap.na_ontap_s3_users:
     state: present
@@ -333,39 +333,6 @@
   when: "('s3' in tenant_specs.allowed_protocols)"
   tags:
     - ontap_s3_group_config
-
-# Create S3 bucket
-- name: Create S3 bucket
-  netapp.ontap.na_ontap_s3_buckets:
-    state: present
-    name: "{{item.name}}"
-    size: "{{item.size}}"
-    type: s3
-    vserver: "{{tenant_specs.svm_name}}"
-    policy:
-      statements:
-        - sid: FullAccessToS3User
-          resources:
-            - "{{item.name}}"
-            - "{{item.name}}/*"
-          actions:
-            - GetObject
-            - PutObject
-            - DeleteObject
-            - ListBucket
-          effect: allow
-          principals: 
-            - "group/{{tenant_specs.s3_group}}"
-    hostname: "{{inventory_hostname}}"
-    username: "{{username}}"
-    password: "{{password}}"
-    https: true
-    validate_certs: false
-  with_items:
-    - "{{tenant_specs.s3_bucket_specs}}"
-  when: "('s3' in tenant_specs.allowed_protocols)"
-  tags:
-    - ontap_s3_bucket_config
 
 # Set the password for vsadmin first. Account cannot be unlocked without password
 - name: Set a password for the SVM vsadmin user
