@@ -44,6 +44,7 @@
     - ontap_svm_audit_log_vol
 
 # Create ONTAP S3 bucket
+# Create S3 bucket
 - name: Create S3 bucket
   netapp.ontap.na_ontap_s3_buckets:
     state: present
@@ -64,6 +65,7 @@
             - ListBucket
           effect: allow
           principals:
+          principals: 
             - "group/{{tenant_specs.s3_group}}"
     hostname: "{{inventory_hostname}}"
     username: "{{username}}"
